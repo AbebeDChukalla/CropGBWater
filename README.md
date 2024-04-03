@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452)
 # CropGBWater
 ## <font color='#ff009a'> MODEL FOR GLOBAL AND GRIDDED ASSESSMENT OF CROP WATER CONSUMPTION (GREEN AND BLUE) AND WATER-LIMITED CROP YIELD </font> 
 ### Version 0.1
