@@ -13,6 +13,6 @@
 * Abebe D. Chukalla (IHE Delft, a.chukalla@un-ihe.org),
 
 **Cite as:** 
-<br/>Mekonnen, M.M., Chukalla, A.D.GLOBAL GRIDDED MODEL FOR ASSESSING CROPS' GREEN AND BLUE WATER USE AND WATER-LIMITED CROP YIELD (v2.1). [![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452), October 2020
+<br/>Mekonnen, M.M., Chukalla, A.D.GLOBAL GRIDDED MODEL FOR ASSESSING CROPS' GREEN AND BLUE WATER USE AND WATER-LIMITED CROP YIELD (v2.1). [![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452), October 2023
 
 The Python script for the 2GBWater model processes diverse input data, including crop details, soil properties, and climate records. It calculates crucial parameters like crop water requirements, irrigation needs, and yields. The script tracks daily water dynamics and fluxes, distinguishing green and blue components, and saves results in CSV files for analysis across crops and locations. 
