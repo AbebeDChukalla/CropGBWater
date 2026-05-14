@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="'Instrument Serif', 'Times New Roman', serif">
+  <!-- background -->
+  <rect width="1200" height="630" fill="#f3efe6"/>
+
+  <!-- top eyebrow rule + label -->
+  <line x1="80" y1="98" x2="140" y2="98" stroke="#4a4842" stroke-width="2"/>
+  <text x="152" y="104" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="22" font-weight="500" letter-spacing="1.4" fill="#4a4842">
+    ATLAS OF AGRICULTURAL GREEN- AND BLUE WATER USE  ·  2016
+  </text>
+
+  <!-- brand mark -->
+  <g transform="translate(80,40)">
+    <circle cx="14" cy="14" r="11" fill="#2d5a3d"/>
+    <circle cx="24" cy="14" r="11" fill="#1e4a7a" style="mix-blend-mode: multiply; opacity: 0.92"/>
+  </g>
+  <text x="120" y="50" font-size="22" fill="#14140f" letter-spacing="-0.3">
+    Crops<tspan fill="#2d5a3d" font-style="italic">Green</tspan><tspan fill="#1e4a7a" font-style="italic">Blue</tspan>Water
+  </text>
+
+  <!-- editorial headline -->
+  <text x="80" y="232" font-size="80" font-weight="400" fill="#14140f" letter-spacing="-2">
+    The world's farms drink
+  </text>
+  <text x="80" y="328" font-size="80" font-weight="400" fill="#14140f" letter-spacing="-2">
+    <tspan fill="#1e4a7a" font-style="italic">9%</tspan> more water than
+  </text>
+  <text x="80" y="424" font-size="80" font-weight="400" fill="#14140f" letter-spacing="-2">
+    they did <tspan fill="#8a877d" font-style="italic">a decade ago.</tspan>
+  </text>
+
+  <!-- green / blue split bar (84% / 16% of 6,668 km³) -->
+  <!-- Total width = 1040. Green = 84%, Blue = 16% -->
+  <g transform="translate(80,468)">
+    <rect x="0"   y="0" width="872" height="90" fill="#2d5a3d"/>
+    <rect x="876" y="0" width="164" height="90" fill="#1e4a7a"/>
+
+    <!-- green block labels -->
+    <circle cx="22" cy="20" r="5" fill="#7ea36b"/>
+    <text x="34" y="25" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="12" letter-spacing="1" fill="#f3efe6">
+      GREEN WATER  ·  RAINFALL
+    </text>
+    <text x="22" y="74" font-size="44" fill="#f3efe6" letter-spacing="-1">
+      83.8<tspan font-size="22" font-style="normal" fill="rgba(243,239,230,0.7)">%</tspan>
+      <tspan font-family="'JetBrains Mono', ui-monospace, monospace" font-size="13" fill="rgba(243,239,230,0.78)" dx="14" dy="-2">5,588 km³/yr</tspan>
+    </text>
+
+    <!-- blue block labels -->
+    <circle cx="894" cy="20" r="5" fill="#6fa1cf"/>
+    <text x="906" y="25" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="12" letter-spacing="1" fill="#f3efe6">
+      BLUE WATER
+    </text>
+    <text x="894" y="74" font-size="34" fill="#f3efe6" letter-spacing="-1">
+      16.2<tspan font-size="16" fill="rgba(243,239,230,0.7)">%</tspan>
+    </text>
+  </g>
+
+  <!-- bottom strip -->
+  <line x1="80" y1="586" x2="1120" y2="586" stroke="rgba(20,20,15,0.10)" stroke-width="1"/>
+  <text x="80" y="608" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="13" fill="#4a4842" letter-spacing="0.5">
+    46 crops  ·  172 countries  ·  2000-2020  ·  0.083° (~10 km) grid
+  </text>
+  <text x="1120" y="608" text-anchor="end" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="13" fill="#4a4842" letter-spacing="0.5">
+    abebedchukalla.github.io/CropGBWater
+  </text>
+</svg>
