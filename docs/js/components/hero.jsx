@@ -12,7 +12,7 @@ function Hero({ data }) {
       <div className="hero-grid">
         <div className="eyebrow eyebrow-lg">
           <span className="eyebrow-mark" />
-          <span>Atlas of agricultural green- and blue water use · 2016 · {data.meta.n_crops} crops</span>
+          <span>Atlas of agricultural green- and blue water use · 2026 · {data.meta.n_crops} crops</span>
         </div>
 
         <h1 className="hero-headline">
