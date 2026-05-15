@@ -1,8 +1,19 @@
 # LinkedIn post drafts
 
 Three drafts in different tones. Pick one, edit lightly, paste into a
-new LinkedIn post, and **attach `social-preview.png`** (or just paste the
-URL and let LinkedIn auto-unfurl the card).
+new LinkedIn post.
+
+## Two preview images, two ways to use them
+
+- **`social-preview.png`** — used by LinkedIn's automatic unfurl when you
+  paste the dashboard URL. You don't have to attach it manually; LinkedIn
+  fetches it from the page's `og:image` tag.
+- **`social-preview.gif`** — a 5-frame, 15-second animation that cycles
+  through the key finding of each module (Overview → Atlas → Trends →
+  Crops → Countries). LinkedIn does not animate `og:image` files, so to
+  show this animation you need to **attach it as an image to the post**
+  manually. The card unfurl will still show, but with the GIF attached
+  directly LinkedIn will play the animation in the feed.
 
 The card preview LinkedIn shows is driven by the `<meta og:*>` tags in
 `index.html` plus `social-preview.png`. To force a refresh after deploy:
@@ -83,11 +94,12 @@ https://www.linkedin.com/post-inspector/
 ## Posting checklist
 
 - [ ] Deploy (`DEPLOY.md`) and confirm https://abebedchukalla.github.io/CropGBWater/ loads
-- [ ] Open the URL directly: confirm map renders and country click works
+- [ ] Open the URL directly: confirm map, donut chart and country click work
 - [ ] Run https://www.linkedin.com/post-inspector/ on the URL → confirm
       preview shows the 9%-headline image
-- [ ] Optionally attach `social-preview.png` to the post explicitly
-      (LinkedIn will sometimes use the attached image instead of the
-      og:image — both work)
+- [ ] **For animation:** download `social-preview.gif` from the deployed site
+      (`https://abebedchukalla.github.io/CropGBWater/social-preview.gif`) and
+      attach it directly to your LinkedIn post — LinkedIn will play the 15-second
+      cycle of key findings inline in the feed.
 - [ ] Tag co-authors if you want them notified — paste their LinkedIn @handles
 - [ ] Post between Tue–Thu, 9–11am local time for best reach

@@ -34,7 +34,7 @@ function Trends({ data }) {
           <span>Module 05 / Trends</span>
         </div>
         <h2 className="module-title">
-          Two decades. Green water has grown nearly three times faster than blue.
+          Two decades. Green water use has grown nearly three times faster than blue.
         </h2>
         <p className="module-sub">
           Annual totals across all {data.meta.n_crops} crops and {data.meta.n_countries} countries.
@@ -69,10 +69,10 @@ function Trends({ data }) {
           {bluePts.map((p)  => <circle key={`b${p.yr}`} cx={p.x} cy={p.y} r="3" className="pt pt-blue"  />)}
 
           <text x={x(years[years.length-1]) + 14} y={yScale(g(2020, "green")) + 4} className="ser-label green">
-            Green water · {CGBW.fmt.km3(g(2020, "green"))}
+            Green water use · {CGBW.fmt.km3(g(2020, "green"))}
           </text>
           <text x={x(years[years.length-1]) + 14} y={yScale(g(2020, "blue")) + 4} className="ser-label blue">
-            Blue water · {CGBW.fmt.km3(g(2020, "blue"))}
+            Blue water use · {CGBW.fmt.km3(g(2020, "blue"))}
           </text>
           <text x={x(years[years.length-1]) + 14} y={yScale(g(2020, "total")) - 10} className="ser-label total">
             Total · {CGBW.fmt.km3(g(2020, "total"))}&nbsp;km³
@@ -88,7 +88,7 @@ function Trends({ data }) {
             </div>
           </div>
           <div className="callout">
-            <div className="callout-label">Green water share, 2020</div>
+            <div className="callout-label">Green water use share, 2020</div>
             <div className="callout-val">
               <span className="num">{(g(2020,"green") / g(2020,"total") * 100).toFixed(1)}</span><i>%</i>
             </div>

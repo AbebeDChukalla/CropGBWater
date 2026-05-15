@@ -1,10 +1,11 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "release": "2026",
   "license": "CC BY 4.0",
   "n_crops": 46,
   "n_groups": 10,
   "n_countries": 172,
+  "n_continents": 6,
   "years": [
     2000,
     2010,
@@ -12,7 +13,16 @@
   ],
   "resolution": "0.083\u00b0 (~10 km) grid",
   "model": "PCR-GLOBWB + GAEZ crop calendar",
-  "doi": "10.xxxx/cropsgbw.2026",
-  "citation": "Global spatially explicit crop water consumption shows an overall increase of 9% for 46 agricultural crops from 2010 to 2020.",
-  "built_at": "2026-05-14T22:07:43+00:00Z"
+  "paper_authors": "Chukalla, A.D., Mekonnen, M.M., Gunathilake, D., Wolkeba, F.T., Gunasekara, B., Vanham, D.",
+  "paper_year": 2025,
+  "paper_title": "Global spatially explicit crop water consumption shows an overall increase of 9% for 46 agricultural crops from 2010 to 2020",
+  "paper_journal": "Nature Food",
+  "paper_volume": "Volume 6",
+  "paper_doi": "10.1038/s43016-025-01231-x",
+  "paper_url": "https://doi.org/10.1038/s43016-025-01231-x",
+  "data_doi": "10.5281/zenodo.17059989",
+  "data_url": "https://doi.org/10.5281/zenodo.17059989",
+  "data_title": "Global spatially explicit crop water consumption shows an overall increase of 9% for 46 agricultural crops from 2010 to 2020: Data and software",
+  "citation": "Chukalla et al. (2025), Nature Food. doi.org/10.1038/s43016-025-01231-x",
+  "built_at": "2026-05-15T14:33:34+00:00Z"
 }

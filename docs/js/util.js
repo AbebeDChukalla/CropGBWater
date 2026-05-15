@@ -7,6 +7,7 @@ window.CGBW = {
     crops:      "data/crops.json",
     crop_groups:"data/crop_groups.json",
     countries:  "data/countries.json",
+    continents: "data/continents.json",
     meta:       "data/meta.json",
     country:    (iso) => `data/country_detail/${iso}.json`,
     world_topo: "https://unpkg.com/world-atlas@2/countries-110m.json",
@@ -19,14 +20,16 @@ CGBW.loadAll = async function () {
     if (!r.ok) throw new Error(`${url} → ${r.status}`);
     return r.json();
   });
-  const [summary, crops, groups, countries, meta] = await Promise.all([
+  const fetchOpt = (url) => fetch(url).then((r) => r.ok ? r.json() : null).catch(() => null);
+  const [summary, crops, groups, countries, continents, meta] = await Promise.all([
     fetchJSON(CGBW.paths.summary),
     fetchJSON(CGBW.paths.crops),
     fetchJSON(CGBW.paths.crop_groups),
     fetchJSON(CGBW.paths.countries),
+    fetchOpt(CGBW.paths.continents),
     fetchJSON(CGBW.paths.meta),
   ]);
-  CGBW.data = { summary, crops, groups, countries, meta };
+  CGBW.data = { summary, crops, groups, countries, continents, meta };
   return CGBW.data;
 };
 
@@ -89,6 +92,30 @@ CGBW.quantileBreaks = function (values, n = 5) {
 CGBW.iso3ByName = function () {
   if (!CGBW.data) return {};
   return Object.fromEntries(CGBW.data.countries.countries.map((c) => [c.name, c.iso3]));
+};
+
+// ─── CountUp helper (no library) ─────────────────────────────────────
+// Used inline in JSX to animate from 0 → target on mount.
+// Returns a string with the correct precision via the formatter you pass.
+// Usage:
+//   const v = CGBW.useCountUp(7720, 900, (n) => Math.round(n).toLocaleString());
+CGBW.useCountUp = function (target, durationMs = 800, format = (n) => Math.round(n).toString()) {
+  const [val, setVal] = React.useState(format(0));
+  React.useEffect(() => {
+    if (target == null || isNaN(target)) { setVal("—"); return; }
+    let raf, start;
+    const animate = (t) => {
+      if (!start) start = t;
+      const p = Math.min(1, (t - start) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3); // ease-out-cubic
+      setVal(format(target * eased));
+      if (p < 1) raf = requestAnimationFrame(animate);
+      else setVal(format(target));   // ensure exact final
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [target, durationMs]);
+  return val;
 };
 
 // world-atlas/countries-110m uses ISO 3166-1 numeric codes as the feature id.

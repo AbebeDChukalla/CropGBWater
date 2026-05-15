@@ -126,8 +126,23 @@ function Atlas({ data, onSelectCountry }) {
 
   React.useEffect(() => { applyChoropleth(); }, [applyChoropleth]);
 
+  // When the Atlas tab becomes active, Leaflet needs an invalidateSize().
+  React.useEffect(() => {
+    const onPage = (e) => {
+      if (e.detail === "atlas" && mapRef.current) {
+        // double-tap because the layout might still be settling
+        requestAnimationFrame(() => {
+          mapRef.current && mapRef.current.invalidateSize();
+          setTimeout(() => mapRef.current && mapRef.current.invalidateSize(), 200);
+        });
+      }
+    };
+    window.addEventListener("cgbw:page", onPage);
+    return () => window.removeEventListener("cgbw:page", onPage);
+  }, []);
+
   // ─── Render ─────────────────────────────────────────────────────────
-  const metricLabel = { total: "Total water", green: "Green water", blue: "Blue water" }[metric];
+  const metricLabel = { total: "Total water use", green: "Green water use", blue: "Blue water use" }[metric];
   const cropLabel = cropFilter === "all" ? "All 46 crops" : cropFilter;
 
   return (
@@ -163,9 +178,9 @@ function Atlas({ data, onSelectCountry }) {
             <span className="ctrl-label">Metric</span>
             <div className="ctrl-body">
               {[
-                { v: "total", label: "Total water" },
-                { v: "green", label: "Green water" },
-                { v: "blue",  label: "Blue water" },
+                { v: "total", label: "Total water use" },
+                { v: "green", label: "Green water use" },
+                { v: "blue",  label: "Blue water use" },
               ].map((m) => (
                 <button key={m.v}
                         className={`chip ${metric === m.v ? "on" : ""}`}
