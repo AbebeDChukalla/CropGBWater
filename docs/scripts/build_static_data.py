@@ -36,7 +36,36 @@ OUT  = ROOT / "webapp" / "data"
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / "country_detail").mkdir(parents=True, exist_ok=True)
 
+# SPAM folder lives one level above Combined_WF_Outputs (in CropGBWater/)
+SPAM_DIR = ROOT.parent / "SPAM_IFPRI_for2000_2010_2020"
+
 YEARS = [2000, 2010, 2020]
+
+# SPAM crop code -> CropGBWater code
+SPAM_CROP_MAP = {
+    "WHEA": "WHEA", "RICE": "RICE", "MAIZ": "MAIZ", "BARL": "BARL",
+    "PMIL": "PMIL", "SMIL": "SMIL", "MILL": "SMIL",
+    "SORG": "SORG", "OCER": "OCER",
+    "POTA": "POTA", "SWPO": "SWPO", "YAMS": "YAMS",
+    "CASS": "CASS", "ORTS": "OROO", "OROO": "OROO",
+    "BEAN": "BEAN", "CHIC": "CHIC", "COWP": "COWP", "PIGE": "PIGE",
+    "LENT": "LENT", "OPUL": "OPUL",
+    "SOYB": "SOYB", "GROU": "GROU", "CNUT": "CNUT",
+    "OILP": "OPAL", "OPAL": "OPAL",
+    "SUNF": "SUNF", "RAPE": "RAPE", "SESA": "SESA", "OOIL": "OOIL",
+    "SUGC": "SUGC", "SUGB": "SUGB",
+    "COTT": "COTT", "OFIB": "OFIB",
+    "COFF": "ACOF", "ACOF": "ACOF",
+    "RCOF": "RCOF", "COCO": "COCO", "TEAS": "TEAS", "TOBA": "TOBA",
+    "BANA": "BANA", "PLNT": "PLNT", "CITR": "CITR",
+    "TROF": "TROF", "TEMF": "TEMF",
+    "TOMA": "TOMA", "ONIO": "ONIO", "VEGE": "VEGE",
+    "RUBB": "RUBB", "REST": "OCRO", "OCRO": "OCRO",
+}
+# Reverse: CGBW -> [SPAM aliases to try]
+CGBW_TO_SPAM: dict[str, list[str]] = {}
+for s, c in SPAM_CROP_MAP.items():
+    CGBW_TO_SPAM.setdefault(c, []).append(s)
 
 CROP_GROUPS = {
     "Cereals":        ["BARL","MAIZ","OCER","PMIL","RICE","SMIL","SORG","WHEA"],
@@ -135,6 +164,219 @@ def clean_country_name(raw: str) -> str:
     if raw in _NAME_OVERRIDES:
         return _NAME_OVERRIDES[raw]
     return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", raw)
+
+
+# ─── SPAM IFPRI fallback aggregator ──────────────────────────────────
+# SPAM2020 uses ADM0_NAME (no ISO3 column). Build a name -> ISO3 lookup
+# from the existing country bundle once it's been computed.
+SPAM_NAME_OVERRIDES = {
+    "United States of America": "USA",
+    "United States":            "USA",
+    "Russian Federation":       "RUS",
+    "Iran (Islamic Republic of)": "IRN",
+    "Iran":                     "IRN",
+    "Viet Nam":                 "VNM",
+    "Vietnam":                  "VNM",
+    "Syrian Arab Republic":     "SYR",
+    "Republic of Korea":        "KOR",
+    "Korea, Republic of":       "KOR",
+    "Dem Peoples Rep of Korea": "PRK",
+    "Democratic Peoples Republic of Korea": "PRK",
+    "Lao Peoples Democratic Republic": "LAO",
+    "Lao Peoples Dem Rep":      "LAO",
+    "Democratic Republic of the Congo": "COD",
+    "Dem Rep of the Congo":     "COD",
+    "Congo":                    "COG",
+    "Republic of the Congo":    "COG",
+    "Cote dIvoire":             "CIV",
+    "Côte d'Ivoire":            "CIV",
+    "Cote d'Ivoire":            "CIV",
+    "Cape Verde":               "CPV",
+    "Cabo Verde":               "CPV",
+    "United Republic of Tanzania": "TZA",
+    "Tanzania":                 "TZA",
+    "Bolivia (Plurinational State of)": "BOL",
+    "Bolivia":                  "BOL",
+    "Venezuela (Bolivarian Republic of)": "VEN",
+    "Venezuela":                "VEN",
+    "Taiwan, Province of China": "TWN",
+    "Taiwan":                   "TWN",
+    "Republic of Moldova":      "MDA",
+    "Moldova":                  "MDA",
+    "Turkey":                   "TUR",
+    "Türkiye":                  "TUR",
+    "Turkiye":                  "TUR",
+    "Czech Republic":           "CZE",
+    "Czechia":                  "CZE",
+    "Brunei Darussalam":        "BRN",
+    "Burma":                    "MMR",
+    "Myanmar":                  "MMR",
+    "Burkina Faso":             "BFA",
+    "United Kingdom":           "GBR",
+    "United Arab Emirates":     "ARE",
+    "Hong Kong":                "HKG",
+    "Bosnia and Herzegovina":   "BIH",
+    "North Macedonia":          "MKD",
+    "The former Yugoslav Republic of Macedonia": "MKD",
+    "Macedonia":                "MKD",
+    "Eswatini":                 "SWZ",
+    "Swaziland":                "SWZ",
+    "Timor-Leste":              "TLS",
+    "East Timor":               "TLS",
+    "Papua New Guinea":         "PNG",
+    "New Zealand":              "NZL",
+    "Saudi Arabia":             "SAU",
+    "South Africa":             "ZAF",
+    "South Sudan":              "SSD",
+    "Sri Lanka":                "LKA",
+    "Sierra Leone":             "SLE",
+    "Equatorial Guinea":        "GNQ",
+    "Western Sahara":           "ESH",
+    "Central African Republic": "CAF",
+    "Dominican Republic":       "DOM",
+    "Costa Rica":               "CRI",
+    "Puerto Rico":              "PRI",
+    "El Salvador":              "SLV",
+    "Antigua and Barbuda":      "ATG",
+    "Trinidad and Tobago":      "TTO",
+    "Saint Vincent and the Grenadines": "VCT",
+    "Saint Lucia":              "LCA",
+    "Saint Kitts and Nevis":    "KNA",
+    "Sao Tome and Principe":    "STP",
+    "Solomon Islands":          "SLB",
+    "Federated States of Micronesia": "FSM",
+    "Macao":                    "MAC",
+    "Falkland Islands (Malvinas)": "FLK",
+    "Falkland Islands":         "FLK",
+    "French Guiana":            "GUF",
+    "Faroe Islands":            "FRO",
+}
+
+def _normalise_name(name: str) -> str:
+    if not isinstance(name, str): return ""
+    n = name.strip()
+    n = re.sub(r"[^A-Za-z ]", "", n).strip()
+    n = re.sub(r"\s+", " ", n)
+    return n.lower()
+
+
+def _build_spam_name_to_iso3(countries: dict) -> dict[str, str]:
+    """Map SPAM ADM0_NAME strings to ISO3 codes using overrides + the
+    existing country bundle as a normalised name lookup."""
+    lookup: dict[str, str] = {}
+    # Seed from overrides
+    for n, iso in SPAM_NAME_OVERRIDES.items():
+        lookup[_normalise_name(n)] = iso
+    # Seed from the country bundle (uses cleaned names already)
+    for c in countries["countries"]:
+        lookup[_normalise_name(c["name"])] = c["iso3"]
+    return lookup
+
+
+def _spam_aggregate_year(year: int, name_to_iso: dict[str, str]) -> dict:
+    """For one SPAM year, aggregate harvested area + production per country
+    per CGBW-crop per technology (rainfed and irrigated).
+
+    Returns: {iso3: {cgbw_code: {
+        'area_rf_ha', 'area_irr_ha', 'prod_rf_t', 'prod_irr_t',
+        'yield_rf_ton_ha', 'yield_irr_ton_ha'
+    }}}
+    """
+    out: dict[str, dict[str, dict]] = {}
+    if year == 2020:
+        base = SPAM_DIR / "SPAM2020" / "_extracted"
+        paths = {
+            "H_TR": base / "spam2020V2r0_global_harvested_area" / "spam2020V2r0_global_H_TR.csv",
+            "H_TI": base / "spam2020V2r0_global_harvested_area" / "spam2020V2r0_global_H_TI.csv",
+            "P_TR": base / "spam2020V2r0_global_production"    / "spam2020V2r0_global_P_TR.csv",
+            "P_TI": base / "spam2020V2r0_global_production"    / "spam2020V2r0_global_P_TI.csv",
+        }
+        id_col = "ADM0_NAME"
+        col_case = "upper"  # COFF_R
+    elif year == 2010:
+        base = SPAM_DIR / "SPAM2010" / "_extracted"
+        paths = {
+            "H_TR": base / "spam2010V2r0_global_H_TR.csv",
+            "H_TI": base / "spam2010V2r0_global_H_TI.csv",
+            "P_TR": base / "spam2010V2r0_global_P_TR.csv",
+            "P_TI": base / "spam2010V2r0_global_P_TI.csv",
+        }
+        id_col = "iso3"
+        col_case = "lower"  # coff_r
+    else:
+        return out  # 2000 — handled separately if data is present
+
+    if not all(p.exists() for p in paths.values()):
+        print(f"  [warn] SPAM {year}: some CSVs missing — skipping")
+        return out
+
+    # Build the SPAM crop columns we need (the CGBW codes mapped back to SPAM)
+    spam_codes = set()
+    for cgbw, aliases in CGBW_TO_SPAM.items():
+        spam_codes.update(aliases)
+
+    def _read(path, tech_suffix):
+        """Read one SPAM CSV and return a dict iso3 -> {SPAM_code: float}."""
+        # Construct the column list (only those that actually exist)
+        if col_case == "upper":
+            crop_cols = [f"{c}_{tech_suffix.upper()}" for c in spam_codes]
+        else:
+            crop_cols = [f"{c.lower()}_{tech_suffix.lower()}" for c in spam_codes]
+        # First peek at the header to subset to actually-present columns
+        head = pd.read_csv(path, nrows=0).columns.tolist()
+        usecols = [id_col] + [c for c in crop_cols if c in head]
+        df = pd.read_csv(path, usecols=usecols, low_memory=False)
+        agg = df.groupby(id_col)[usecols[1:]].sum()
+        # Drop the tech suffix to give plain SPAM crop code keys
+        agg.columns = [c.split("_")[0].upper() for c in agg.columns]
+        return agg
+
+    print(f"  reading SPAM{year}: ", end="", flush=True)
+    h_rf = _read(paths["H_TR"], "R");  print("H_TR", end=" ", flush=True)
+    h_ir = _read(paths["H_TI"], "I");  print("H_TI", end=" ", flush=True)
+    p_rf = _read(paths["P_TR"], "R");  print("P_TR", end=" ", flush=True)
+    p_ir = _read(paths["P_TI"], "I");  print("P_TI", end=" ", flush=True)
+    print()
+
+    # For each country id, build per-CGBW-crop totals
+    countries_all = (set(h_rf.index) | set(h_ir.index)
+                     | set(p_rf.index) | set(p_ir.index))
+
+    for cid in countries_all:
+        # Map id -> ISO3
+        if col_case == "upper":
+            iso = name_to_iso.get(_normalise_name(str(cid)))
+        else:
+            iso = str(cid).upper() if isinstance(cid, str) else None
+        if not iso or len(iso) != 3:
+            continue
+
+        for cgbw_code, spam_aliases in CGBW_TO_SPAM.items():
+            a_rf = a_ir = p_rf_v = p_ir_v = 0.0
+            for s in spam_aliases:
+                if s in h_rf.columns and cid in h_rf.index:
+                    v = h_rf.at[cid, s]; a_rf += v if pd.notna(v) else 0
+                if s in h_ir.columns and cid in h_ir.index:
+                    v = h_ir.at[cid, s]; a_ir += v if pd.notna(v) else 0
+                if s in p_rf.columns and cid in p_rf.index:
+                    v = p_rf.at[cid, s]; p_rf_v += v if pd.notna(v) else 0
+                if s in p_ir.columns and cid in p_ir.index:
+                    v = p_ir.at[cid, s]; p_ir_v += v if pd.notna(v) else 0
+            # Yields = production / area (when area > 0)
+            y_rf = _round(p_rf_v / a_rf, 2) if a_rf > 0 else None
+            y_ir = _round(p_ir_v / a_ir, 2) if a_ir > 0 else None
+            rec = {
+                "area_rf_ha":      _round(a_rf, 1) if a_rf > 0 else None,
+                "area_irr_ha":     _round(a_ir, 1) if a_ir > 0 else None,
+                "prod_rf_t":       _round(p_rf_v, 1) if p_rf_v > 0 else None,
+                "prod_irr_t":      _round(p_ir_v, 1) if p_ir_v > 0 else None,
+                "yield_rf_ton_ha":  y_rf,
+                "yield_irr_ton_ha": y_ir,
+            }
+            # Only store if at least one field has data
+            if any(v is not None for v in rec.values()):
+                out.setdefault(iso, {})[cgbw_code] = rec
+    return out
 
 
 # ─── Wide-yearly CSV reader ──────────────────────────────────────────
@@ -514,6 +756,22 @@ def build_country_detail(countries: dict) -> None:
                          if any(c.endswith(suf) for suf in
                                 ("_RF_WFgn_m3_yr","_IRR_WFgn_m3_yr","_IRR_WFbl_m3_yr"))})
 
+    # SPAM IFPRI fallback (2020 only for now — adequate fill for the country sheet)
+    name_to_iso = _build_spam_name_to_iso3(countries)
+    print("[SPAM] aggregating 2020 fallback ...")
+    spam_2020 = _spam_aggregate_year(2020, name_to_iso)
+    print(f"       SPAM2020 coverage: {len(spam_2020)} countries with at least one crop record")
+
+    # Country WF CSV uses full crop names (ArabicaCoffee) but SPAM lookup uses
+    # 4-letter codes (ACOF). Build a full-name -> 4-letter bridge from
+    # Cross_year_summary_WC.csv (which has both columns).
+    _wc = pd.read_csv(ROOT / "Cross_year_summary_WC.csv", header=1, low_memory=False)
+    _wc = _wc[_wc.iloc[:, 0].notna()]
+    fullname_to_short = {
+        str(_wc.iloc[i, 1]).strip(): str(_wc.iloc[i, 0]).strip()
+        for i in range(len(_wc))
+    }
+
     for country in countries["countries"]:
         iso = country["iso3"]
         detail = dict(country)
@@ -556,20 +814,39 @@ def build_country_detail(countries: dict) -> None:
                 if tot <= 0:
                     continue
 
-                # Area (rainfed + irrigated, ha → Mha)
+                # Area (rainfed + irrigated, ha → Mha) — original country CSV
                 area_rf = area_irr = None
                 if area_row is not None:
                     a_rf  = _safe(area_row.get(f"{code}_RFarea_ha"))
                     a_irr = _safe(area_row.get(f"{code}_IRRarea_ha"))
                     area_rf  = _round((a_rf  or 0) / 1e6, 3) if a_rf  is not None else None
                     area_irr = _round((a_irr or 0) / 1e6, 3) if a_irr is not None else None
-                # Yield (t/ha) under rainfed and irrigated systems
+                # Yield (t/ha) under rainfed + irrigated — original country CSV
                 yld_rf = yld_irr = None
                 if yield_row is not None:
                     yld_rf  = _round(_safe(yield_row.get(f"{code}_Yield_RF_ton_ha")),  2)
                     yld_irr = _round(_safe(yield_row.get(f"{code}_Yield_IRR_ton_ha")), 2)
 
-                crops.append({
+                # SPAM IFPRI fallback for any field still missing or zero.
+                # Country WF columns use the full crop name; SPAM lookup uses
+                # the 4-letter shorthand (ACOF, RICE, WHEA, ...).
+                short_code = fullname_to_short.get(code, code)
+                spam_rec = spam_2020.get(iso, {}).get(short_code, {})
+                spam_used: list[str] = []
+                if (area_rf in (None, 0)) and spam_rec.get("area_rf_ha"):
+                    area_rf = _round(spam_rec["area_rf_ha"] / 1e6, 3)
+                    spam_used.append("area_rf")
+                if (area_irr in (None, 0)) and spam_rec.get("area_irr_ha"):
+                    area_irr = _round(spam_rec["area_irr_ha"] / 1e6, 3)
+                    spam_used.append("area_irr")
+                if (yld_rf in (None, 0)) and spam_rec.get("yield_rf_ton_ha"):
+                    yld_rf = spam_rec["yield_rf_ton_ha"]
+                    spam_used.append("yield_rf")
+                if (yld_irr in (None, 0)) and spam_rec.get("yield_irr_ton_ha"):
+                    yld_irr = spam_rec["yield_irr_ton_ha"]
+                    spam_used.append("yield_irr")
+
+                rec = {
                     "code": code,
                     "green_km3": _round(g / 1e9, 3),
                     "blue_km3":  _round(b / 1e9, 3),
@@ -581,7 +858,11 @@ def build_country_detail(countries: dict) -> None:
                     "area_total_Mha":     _round((area_rf or 0) + (area_irr or 0), 3),
                     "yield_rainfed_ton_ha":   yld_rf,
                     "yield_irrigated_ton_ha": yld_irr,
-                })
+                }
+                if spam_used:
+                    rec["source"] = "spam2020"
+                    rec["source_fields"] = spam_used
+                crops.append(rec)
             crops.sort(key=lambda r: r["total_km3"] or 0, reverse=True)
         detail["crops"] = crops[:30]
 
@@ -613,6 +894,14 @@ def build_meta(summary: dict, crops: dict, countries: dict) -> dict:
         "data_doi":        "10.5281/zenodo.17059989",
         "data_url":        "https://doi.org/10.5281/zenodo.17059989",
         "data_title":      "Global spatially explicit crop water consumption shows an overall increase of 9% for 46 agricultural crops from 2010 to 2020: Data and software",
+        # Secondary dataset — SPAM IFPRI (used as fallback for yield/area when
+        # the primary country CSV is missing values)
+        "spam_doi":        "10.7910/DVN/SWPENT",
+        "spam_url":        "https://doi.org/10.7910/DVN/SWPENT",
+        "spam_title":      "Global Spatially-Disaggregated Crop Production Statistics Data for 2020 Version 2.0.0",
+        "spam_publisher":  "International Food Policy Research Institute (IFPRI)",
+        "spam_year":       2025,
+        "spam_license":    "CC BY 4.0",
         # Headline citation string used in the hero source line
         "citation":     "Chukalla et al. (2025), Nature Food. doi.org/10.1038/s43016-025-01231-x",
         "built_at":     pd.Timestamp.utcnow().isoformat(timespec="seconds") + "Z",

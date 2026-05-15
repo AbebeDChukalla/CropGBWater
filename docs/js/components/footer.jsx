@@ -65,6 +65,19 @@ function MethodFooter({ data }) {
           </div>
 
           <div className="citation-block" style={{ marginTop: 14 }}>
+            <h4>Secondary dataset — SPAM IFPRI</h4>
+            <p className="citation-text">
+              {m.spam_publisher} ({m.spam_year}). {m.spam_title}.
+              {" "}<a href={m.spam_url} target="_blank" rel="noopener">{m.spam_url}</a>
+              {" "}Licence: {m.spam_license}.
+            </p>
+            <div className="citation-actions">
+              <a href={m.spam_url} target="_blank" rel="noopener">↗ Open in Harvard Dataverse</a>
+              <a href={`https://doi.org/${m.spam_doi}`} target="_blank" rel="noopener">DOI</a>
+            </div>
+          </div>
+
+          <div className="citation-block" style={{ marginTop: 14 }}>
             <h4>Methodology &amp; metadata</h4>
             <p className="citation-text" style={{ fontSize: 13.5, lineHeight: 1.6 }}>
               Crop water consumption is estimated at a <strong>{m.resolution}</strong> using a coupled
@@ -93,6 +106,7 @@ function MethodFooter({ data }) {
             <Meta label="License"      value={m.license} />
             <Meta label="Paper DOI"    value={<a href={m.paper_url} target="_blank" rel="noopener">{m.paper_doi}</a>} />
             <Meta label="Dataset DOI"  value={<a href={m.data_url}  target="_blank" rel="noopener">{m.data_doi}</a>} />
+            <Meta label="SPAM DOI"     value={<a href={m.spam_url}  target="_blank" rel="noopener">{m.spam_doi}</a>} />
             <Meta label="Last built"   value={m.built_at.slice(0, 10)} />
           </div>
 
@@ -211,7 +225,8 @@ function CountrySheet({ iso, onClose }) {
               </div>
             </div>
 
-            {detail.area_2020_Mha != null && (
+            {/* Only render the harvested-area row if at least one value is non-zero */}
+            {(detail.area_2020_Mha > 0 || detail.area_2020_rainfed_Mha > 0 || detail.area_2020_irrigated_Mha > 0) && (
               <div className="cs-row">
                 <div className="cs-cell">
                   <span className="cs-cell-label">Harvested area</span>
@@ -226,7 +241,7 @@ function CountrySheet({ iso, onClose }) {
                 <div className="cs-cell">
                   <span className="cs-cell-label">Irrigated</span>
                   <span className="cs-cell-val" style={{ color: "var(--blue)" }}>
-                    <span className="num">{CGBW.fmt.km3p(detail.area_2020_irrigated_Mha)}</span><i>Mha · {detail.irrigated_share_pct ?? "—"}%</i>
+                    <span className="num">{CGBW.fmt.km3p(detail.area_2020_irrigated_Mha)}</span><i>Mha{detail.irrigated_share_pct != null && detail.irrigated_share_pct > 0 ? ` · ${detail.irrigated_share_pct}%` : ""}</i>
                   </span>
                 </div>
               </div>
@@ -254,17 +269,19 @@ function CountrySheet({ iso, onClose }) {
 
             <div>
               <div className="cs-section-label">
-                Top crops · 2020 · water use (km³) · area (Mha) · yield (t/ha)
+                Top crops · 2020 · water (km³ · green/blue %) · area RF/IRR (Mha) · yield RF/IRR (t/ha)
               </div>
               <div className="cs-crop-list">
                 <div className="cs-crop-head">
                   <span>Crop</span>
-                  <span>Water (green / blue)</span>
+                  <span>Water · % green / blue</span>
                   <span>Area RF / IRR</span>
                   <span>Yield RF / IRR</span>
                 </div>
-                {detail.crops.slice(0, 12).map((c) => {
+                {detail.crops.slice(0, 14).map((c) => {
                   const max = detail.crops[0].total_km3 || 1;
+                  const hasArea  = (c.area_rainfed_Mha  ?? 0) > 0 || (c.area_irrigated_Mha  ?? 0) > 0;
+                  const hasYield = c.yield_rainfed_ton_ha != null || c.yield_irrigated_ton_ha != null;
                   return (
                     <div key={c.code} className="cs-crop-row">
                       <span className="cs-crop-name" title={c.code}>{c.code}</span>
@@ -273,17 +290,31 @@ function CountrySheet({ iso, onClose }) {
                           <i className="seg-green" style={{ flexBasis: `${c.green_pct}%` }} />
                           <i className="seg-blue"  style={{ flexBasis: `${c.blue_pct }%` }} />
                         </div>
-                        <span className="cs-crop-water-val">{CGBW.fmt.km3p(c.total_km3)}</span>
+                        <span className="cs-crop-water-val">
+                          {CGBW.fmt.km3p(c.total_km3)}
+                          <span className="cs-crop-water-pct">
+                            <span style={{ color: "var(--green)" }}> · {c.green_pct}%g</span>
+                            <span style={{ color: "var(--blue)"  }}>/{c.blue_pct}%b</span>
+                          </span>
+                        </span>
                       </div>
-                      <span className="cs-crop-val">
-                        <span style={{ color: "var(--green)" }}>{c.area_rainfed_Mha != null ? c.area_rainfed_Mha.toFixed(2) : "—"}</span>
-                        <span style={{ color: "var(--ink40)" }}> / </span>
-                        <span style={{ color: "var(--blue)" }}>{c.area_irrigated_Mha != null ? c.area_irrigated_Mha.toFixed(2) : "—"}</span>
+                      <span className="cs-crop-val" data-empty={!hasArea ? "1" : "0"}>
+                        {hasArea ? (
+                          <>
+                            <span style={{ color: "var(--green)" }}>{c.area_rainfed_Mha   != null ? c.area_rainfed_Mha.toFixed(2)   : "—"}</span>
+                            <span style={{ color: "var(--ink40)" }}> / </span>
+                            <span style={{ color: "var(--blue)"  }}>{c.area_irrigated_Mha != null ? c.area_irrigated_Mha.toFixed(2) : "—"}</span>
+                          </>
+                        ) : <span style={{ color: "var(--ink40)" }}>n/d</span>}
                       </span>
-                      <span className="cs-crop-val">
-                        <span style={{ color: "var(--green)" }}>{c.yield_rainfed_ton_ha != null ? c.yield_rainfed_ton_ha.toFixed(1) : "—"}</span>
-                        <span style={{ color: "var(--ink40)" }}> / </span>
-                        <span style={{ color: "var(--blue)" }}>{c.yield_irrigated_ton_ha != null ? c.yield_irrigated_ton_ha.toFixed(1) : "—"}</span>
+                      <span className="cs-crop-val" data-empty={!hasYield ? "1" : "0"}>
+                        {hasYield ? (
+                          <>
+                            <span style={{ color: "var(--green)" }}>{c.yield_rainfed_ton_ha   != null ? c.yield_rainfed_ton_ha.toFixed(2)   : "—"}</span>
+                            <span style={{ color: "var(--ink40)" }}> / </span>
+                            <span style={{ color: "var(--blue)"  }}>{c.yield_irrigated_ton_ha != null ? c.yield_irrigated_ton_ha.toFixed(2) : "—"}</span>
+                          </>
+                        ) : <span style={{ color: "var(--ink40)" }}>n/d</span>}
                       </span>
                     </div>
                   );
@@ -292,7 +323,7 @@ function CountrySheet({ iso, onClose }) {
               <div className="cs-crop-legend">
                 <span><i className="dot dot-green" /> rainfed</span>
                 <span><i className="dot dot-blue"  /> irrigated</span>
-                <span>Area in Mha · Yield in t/ha · Water in km³/yr</span>
+                <span>n/d = not reported in source</span>
               </div>
             </div>
           </>

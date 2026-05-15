@@ -1,70 +1,50 @@
-// feedback.jsx — Contact page. Email is hidden everywhere on the page;
-// the destination is base64-encoded so it doesn't appear in plain text.
-// Posts to FormSubmit; on failure (network/CORS), falls back to a native
-// form submit (full page POST) which works even when fetch() is blocked.
+// feedback.jsx — Contact page. The destination email is hidden from the page:
+// base64-encoded in JS, decoded only when the user clicks Send.
+//
+// Delivery is via mailto: — when the user submits, we read all the form
+// fields, build a structured plain-text body, and hand it off to the user's
+// default email client. This works regardless of network state, CORS, or
+// browser extensions — no third-party form service to depend on.
 
-// Base64 of "abedeme@gmail.com" — decoded only at submit time so the address
-// is never present in plain HTML or visible text on the page.
-const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";
-const decodeTo = () => {
-  try { return atob(TO_B64); } catch (_) { return ""; }
-};
-
+const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";       // base64 of the destination
+const decodeTo = () => { try { return atob(TO_B64); } catch (_) { return ""; } };
 const EMAIL_SUBJECT = "CropGBWater – Feedback or Collaboration Request";
 
 function FeedbackPage({ data }) {
-  const [status, setStatus] = React.useState("idle"); // idle | sending | success | error
-  const [error,  setError]  = React.useState(null);
-  const formRef = React.useRef(null);
+  const [sent, setSent] = React.useState(false);
 
-  const fallbackSubmit = () => {
-    // Force a regular form POST as a fallback. The form's action is set on
-    // demand (so the address is never in the static HTML).
-    const f = formRef.current;
-    if (!f) return;
-    f.action = `https://formsubmit.co/${decodeTo()}`;
-    f.method = "POST";
-    // Remove the AJAX handler so the browser does a regular submit
-    f.onsubmit = null;
-    f.submit();
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const f = e.currentTarget;
-    setStatus("sending");
-    setError(null);
-    try {
-      const fd = new FormData(f);
-      const res = await fetch(`https://formsubmit.co/ajax/${decodeTo()}`, {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: fd,
-      });
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && (json.success === "true" || json.success === true)) {
-        setStatus("success");
-        f.reset();
-      } else {
-        setStatus("error");
-        setError("The form server didn't accept the message. Try the email-client fallback below.");
-      }
-    } catch (err) {
-      setStatus("error");
-      setError("The form couldn't be reached from this browser (network or extension may be blocking it). Use the email-client fallback below.");
-    }
-  };
+    const fd = new FormData(f);
+    const name        = (fd.get("name")        || "").toString().trim();
+    const email       = (fd.get("email")       || "").toString().trim();
+    const affiliation = (fd.get("affiliation") || "").toString().trim();
+    const type        = (fd.get("type")        || "Feedback").toString().trim();
+    const message     = (fd.get("message")     || "").toString().trim();
 
-  const openInEmailClient = (e) => {
-    e.preventDefault();
-    const to = decodeTo();
-    const body = "Name: \n\nAffiliation: \n\nType (Feedback / Question / Collaboration / Bug): \n\nMessage:\n";
-    window.location.href = `mailto:${to}?subject=${encodeURIComponent(EMAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
-  };
+    if (!name || !email || !message) return;
 
-  const tryFallback = (e) => {
-    e.preventDefault();
-    fallbackSubmit();
+    const body = [
+      `Name:        ${name}`,
+      `Email:       ${email}`,
+      affiliation ? `Affiliation: ${affiliation}` : null,
+      `Type:        ${type}`,
+      ``,
+      `Message:`,
+      message,
+      ``,
+      `— sent via the CropGBWater dashboard`,
+    ].filter((l) => l !== null).join("\n");
+
+    const url = `mailto:${decodeTo()}`
+              + `?subject=${encodeURIComponent(EMAIL_SUBJECT)}`
+              + `&body=${encodeURIComponent(body)}`;
+
+    // Open the user's default email client with everything pre-filled
+    window.location.href = url;
+    // Mark sent UI on the page (user still needs to click Send in their mail app)
+    setSent(true);
   };
 
   return (
@@ -85,15 +65,7 @@ function FeedbackPage({ data }) {
       </div>
 
       <div className="feedback-grid">
-        <form ref={formRef} className="feedback-form" onSubmit={handleSubmit} noValidate>
-          <input type="hidden" name="_subject" value={EMAIL_SUBJECT} />
-          <input type="hidden" name="_template" value="table" />
-          <input type="hidden" name="_captcha" value="false" />
-          <input type="hidden" name="_next"
-                 value={(typeof window !== "undefined" ? window.location.origin + window.location.pathname : "") + "#contact"} />
-          {/* Honeypot anti-spam */}
-          <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
-
+        <form className="feedback-form" onSubmit={handleSubmit} noValidate>
           <label className="field">
             <span className="field-label">Your name</span>
             <input type="text" name="name" required maxLength={120} placeholder="Dr. Jane Doe" />
@@ -128,28 +100,14 @@ function FeedbackPage({ data }) {
           </label>
 
           <div className="feedback-actions">
-            <button type="submit" className="feedback-submit" disabled={status === "sending"}>
-              {status === "sending" ? "Sending…" : "Send message"}
-            </button>
-            <a href="#" className="feedback-mailto" onClick={openInEmailClient}
-               title="Opens your default email app with the subject pre-filled">
-              Open in email client instead
-            </a>
+            <button type="submit" className="feedback-submit">Send message</button>
+            <span className="feedback-mailto-hint">Opens in your default email app</span>
           </div>
 
-          {status === "success" && (
+          {sent && (
             <div className="feedback-status feedback-success">
-              <strong>Thanks — message sent.</strong> A reply will come back to you within a few days.
-            </div>
-          )}
-          {status === "error" && (
-            <div className="feedback-status feedback-error">
-              <strong>Couldn&rsquo;t send via the form.</strong> {error}
-              <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <a href="#" onClick={openInEmailClient}>Open in email client</a>
-                <span style={{ color: "var(--ink40)" }}>·</span>
-                <a href="#" onClick={tryFallback}>Retry via full page submit</a>
-              </div>
+              <strong>Email client opened.</strong> Click &ldquo;Send&rdquo; in your email app to deliver the message.
+              {" "}If nothing opened, check your browser&rsquo;s pop-up settings or use your normal email program directly.
             </div>
           )}
         </form>
@@ -179,8 +137,9 @@ function FeedbackPage({ data }) {
           </div>
 
           <div className="feedback-note">
-            Privacy: messages are forwarded by FormSubmit.co to the project author and not stored on this site.
-            The email address is not displayed on this page — only the subject line is visible to senders.
+            Privacy: the destination email is not displayed on this page.
+            Submissions are handed to your local email app and not stored on this site
+            or sent through any third-party form service.
           </div>
         </aside>
       </div>

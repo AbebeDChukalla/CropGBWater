@@ -153,16 +153,18 @@ function BrandMark({ size = 56 }) {
 }
 
 function Logo() {
-  // Wordmark: Crop + [G + "Green" label] + [B + "Blue" label] + Water
+  // Wordmark: Crop + [G + vertical "Green"] + [B + vertical "Blue"] + Water
+  // The "Green" / "Blue" labels are written VERTICALLY (rotated 90° so they
+  // run alongside the letters), in their respective colours.
   return (
     <span className="logo">
       <span className="logo-crop">Crop</span>
       <span className="logo-letter logo-G">
-        <span className="logo-letter-label">Green</span>
+        <span className="logo-letter-label" aria-hidden="true">Green</span>
         <span className="logo-letter-main">G</span>
       </span>
       <span className="logo-letter logo-B">
-        <span className="logo-letter-label">Blue</span>
+        <span className="logo-letter-label" aria-hidden="true">Blue</span>
         <span className="logo-letter-main">B</span>
       </span>
       <span className="logo-water">Water</span>

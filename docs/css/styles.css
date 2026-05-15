@@ -108,8 +108,9 @@ body[data-loading="0"] .boot { display: none; }
           drop-shadow(0 0 2px rgba(255,255,255,0.6));
 }
 
-/* CropGBWater wordmark — modern bold, charcoal Crop/Water + green G + blue B,
-   with small "Green" / "Blue" labels positioned ABOVE the G and B letters. */
+/* CropGBWater wordmark — modern bold, charcoal Crop/Water + green G + blue B.
+   Small "Green" / "Blue" labels appear horizontally ABOVE each respective
+   letter, centred over it and coloured to match. */
 .logo {
   font-family: var(--font-body);
   font-weight: 800;
@@ -118,7 +119,7 @@ body[data-loading="0"] .boot { display: none; }
   display: inline-flex; align-items: flex-end; gap: 1px;
   line-height: 1;
   text-rendering: geometricPrecision;
-  padding-top: 10px;     /* reserve space for the labels above G/B */
+  padding-top: 11px;        /* reserve space for labels above the G/B */
 }
 .logo-crop, .logo-water { color: var(--ink); }
 .logo-letter {
@@ -132,7 +133,6 @@ body[data-loading="0"] .boot { display: none; }
 .logo-letter-main {
   display: block;
   line-height: 1;
-  /* gradient sheen for "shining" appearance */
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -153,10 +153,10 @@ body[data-loading="0"] .boot { display: none; }
   transform: translateX(-50%);
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.40em;
+  font-size: 0.42em;
   letter-spacing: 0;
   line-height: 1;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
   white-space: nowrap;
   text-transform: none;
   pointer-events: none;
@@ -734,7 +734,11 @@ body[data-loading="0"] .boot { display: none; }
 .meta-row { display: grid; grid-template-columns: 140px 1fr; gap: 14px; padding: 8px 0; border-top: 0.5px solid var(--line); font-size: 13px; align-items: baseline; }
 .meta-row:last-child { border-bottom: 0.5px solid var(--line); }
 .meta-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink40); letter-spacing: 0.04em; text-transform: uppercase; }
-.meta-value { font-family: var(--font-mono); color: var(--ink); font-size: 12.5px; word-break: break-word; }
+.meta-value {
+  font-family: var(--font-mono); color: var(--ink); font-size: 12.5px;
+  word-break: break-word; overflow-wrap: anywhere;
+  max-width: 100%;
+}
 .meta-value a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
 
 .citation-block {
@@ -747,8 +751,16 @@ body[data-loading="0"] .boot { display: none; }
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--ink40); margin: 0; font-weight: 500;
 }
-.citation-text { font-family: var(--font-body); font-size: 14px; line-height: 1.55; color: var(--ink); margin: 0; }
-.citation-text a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.citation-text {
+  font-family: var(--font-body); font-size: 14px; line-height: 1.55;
+  color: var(--ink); margin: 0;
+  overflow-wrap: anywhere; word-break: break-word;
+  max-width: 100%;
+}
+.citation-text a {
+  color: var(--blue); text-decoration: underline; text-underline-offset: 2px;
+  word-break: break-all;
+}
 .citation-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .citation-actions a {
   padding: 5px 12px; border-radius: 999px;
@@ -885,6 +897,29 @@ body[data-loading="0"] .boot { display: none; }
   color: var(--ink40); padding-top: 8px;
 }
 .cs-crop-legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+.cs-source-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  background: color-mix(in oklab, var(--accent) 18%, var(--paper));
+  color: var(--accent);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  line-height: 1.4;
+  cursor: help;
+}
+
+.cs-crop-water-val { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+.cs-crop-water-pct {
+  font-family: var(--font-mono); font-size: 10px; opacity: 0.85;
+  white-space: nowrap;
+}
+.cs-crop-val[data-empty="1"] { opacity: 0.55; }
 
 .cs-trend { display: flex; justify-content: space-between; gap: 12px; }
 .cs-trend-cell { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 0.5px solid var(--line); min-width: 0; }
@@ -1069,13 +1104,22 @@ body[data-loading="0"] .boot { display: none; }
   font-family: var(--font-mono); font-size: 11.5px; color: var(--ink70);
   letter-spacing: 0.04em; text-decoration: underline; text-underline-offset: 3px;
 }
+.feedback-mailto-hint {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink40); letter-spacing: 0.03em;
+}
 
 .feedback-status {
   grid-column: 1 / -1;
-  padding: 12px 14px; border-radius: 6px;
-  font-size: 13.5px; line-height: 1.5;
+  padding: 14px 18px; border-radius: 6px;
+  font-size: 13.5px; line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+  margin-top: 4px;
   animation: rise .35s ease-out both;
 }
+.feedback-status strong { display: inline-block; margin-right: 4px; }
 .feedback-success { background: color-mix(in oklab, var(--green) 12%, var(--paper)); border: 0.5px solid var(--green); color: var(--green); }
 .feedback-error   { background: color-mix(in oklab, var(--accent) 12%, var(--paper)); border: 0.5px solid var(--accent); color: var(--accent); }
 .feedback-error a { color: var(--accent); text-decoration: underline; }
@@ -1101,8 +1145,14 @@ body[data-loading="0"] .boot { display: none; }
 }
 .feedback-note {
   font-family: var(--font-mono); font-size: 10.5px; color: var(--ink40);
-  line-height: 1.5; padding: 0 4px;
+  line-height: 1.55; padding: 12px 14px;
+  background: var(--paper2);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
+.feedback-card ul li { overflow-wrap: anywhere; }
 
 /* ─── Responsive breakpoints ───────────────────────────────────────── */
 
