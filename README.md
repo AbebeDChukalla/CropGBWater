@@ -3,9 +3,9 @@
 ## <font color='#ff009a'> GLOBAL GRIDDED MODEL OF CROPS' GREEN and BLUE WATER USE AND WATER-LIMITED CROP YIELD </font> 
 ### Version 2.1
 **Project**: ***Foresight Initiative: Global Gridded Crop Water Demand 2020 (G2CWD)***
-
-<br/>**September 2023**
+<br/>**Created in September 2023, updated in May 2026**
 ![CropGBWater dashboard animation](docs/social-preview.gif)
+
 ![title](CropGBWaterIMG.PNG)
 
 **Authors:** 
