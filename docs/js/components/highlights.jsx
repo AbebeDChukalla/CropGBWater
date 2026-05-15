@@ -83,7 +83,7 @@ function buildSlides(d) {
       module: "Atlas · where",
       stat: `${asia ? asia.share_pct : 52}%`,
       unit: "of global crop water is consumed in Asia",
-      line: `Asia draws ${asia ? Math.round(asia.total_km3).toLocaleString() : "≈3,500"} km³/yr across ${asia ? asia.n_countries : 46} countries — more than Africa, Europe, and the Americas combined.`,
+      line: `Asia draws ${asia ? Math.round(asia.total_km3).toLocaleString() : "≈3,500"} km³/yr — more than Africa, Europe, and the Americas combined.`,
       bg: "linear-gradient(135deg, #2d5a3d 0%, #4a7d4d 100%)",
       fg: "#f3efe6",
     },

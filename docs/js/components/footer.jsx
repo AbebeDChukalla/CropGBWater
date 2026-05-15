@@ -253,21 +253,46 @@ function CountrySheet({ iso, onClose }) {
             </div>
 
             <div>
-              <div className="cs-section-label">Top crops by water consumption · 2020</div>
+              <div className="cs-section-label">
+                Top crops · 2020 · water use (km³) · area (Mha) · yield (t/ha)
+              </div>
               <div className="cs-crop-list">
-                {detail.crops.slice(0, 10).map((c) => {
+                <div className="cs-crop-head">
+                  <span>Crop</span>
+                  <span>Water (green / blue)</span>
+                  <span>Area RF / IRR</span>
+                  <span>Yield RF / IRR</span>
+                </div>
+                {detail.crops.slice(0, 12).map((c) => {
                   const max = detail.crops[0].total_km3 || 1;
                   return (
                     <div key={c.code} className="cs-crop-row">
-                      <span className="cs-crop-name">{c.code}</span>
-                      <div className="cs-crop-bar" style={{ width: `${(c.total_km3 / max) * 100}%` }}>
-                        <i className="seg-green" style={{ flexBasis: `${c.green_pct}%` }} />
-                        <i className="seg-blue"  style={{ flexBasis: `${c.blue_pct }%` }} />
+                      <span className="cs-crop-name" title={c.code}>{c.code}</span>
+                      <div className="cs-crop-water">
+                        <div className="cs-crop-bar" style={{ width: `${(c.total_km3 / max) * 100}%` }}>
+                          <i className="seg-green" style={{ flexBasis: `${c.green_pct}%` }} />
+                          <i className="seg-blue"  style={{ flexBasis: `${c.blue_pct }%` }} />
+                        </div>
+                        <span className="cs-crop-water-val">{CGBW.fmt.km3p(c.total_km3)}</span>
                       </div>
-                      <span className="cs-crop-val">{CGBW.fmt.km3p(c.total_km3)} km³</span>
+                      <span className="cs-crop-val">
+                        <span style={{ color: "var(--green)" }}>{c.area_rainfed_Mha != null ? c.area_rainfed_Mha.toFixed(2) : "—"}</span>
+                        <span style={{ color: "var(--ink40)" }}> / </span>
+                        <span style={{ color: "var(--blue)" }}>{c.area_irrigated_Mha != null ? c.area_irrigated_Mha.toFixed(2) : "—"}</span>
+                      </span>
+                      <span className="cs-crop-val">
+                        <span style={{ color: "var(--green)" }}>{c.yield_rainfed_ton_ha != null ? c.yield_rainfed_ton_ha.toFixed(1) : "—"}</span>
+                        <span style={{ color: "var(--ink40)" }}> / </span>
+                        <span style={{ color: "var(--blue)" }}>{c.yield_irrigated_ton_ha != null ? c.yield_irrigated_ton_ha.toFixed(1) : "—"}</span>
+                      </span>
                     </div>
                   );
                 })}
+              </div>
+              <div className="cs-crop-legend">
+                <span><i className="dot dot-green" /> rainfed</span>
+                <span><i className="dot dot-blue"  /> irrigated</span>
+                <span>Area in Mha · Yield in t/ha · Water in km³/yr</span>
               </div>
             </div>
           </>

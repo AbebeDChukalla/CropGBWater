@@ -46,14 +46,15 @@ function Atlas({ data, onSelectCountry }) {
   React.useEffect(() => {
     if (mapRef.current || !hostRef.current) return;
     const map = L.map(hostRef.current, {
-      center: [22, 12],
+      center: [20, 0],
       zoom: 2,
-      minZoom: 2,
-      maxZoom: 6,
+      minZoom: 1,       // allow the full world to be visible at once
+      maxZoom: 8,       // allow drill-in to small countries
       worldCopyJump: true,
-      scrollWheelZoom: false,
+      scrollWheelZoom: true,
       attributionControl: true,
       zoomControl: true,
+      preferCanvas: false,
     });
     map.attributionControl.setPrefix(false);
     map.attributionControl.addAttribution("Natural Earth · CropGBWater 2026");
@@ -64,8 +65,6 @@ function Atlas({ data, onSelectCountry }) {
     fetch(CGBW.paths.world_topo)
       .then((r) => r.json())
       .then((topo) => {
-        // topojson-client isn't loaded; convert manually using the helpers
-        // exposed below. To keep things zero-dep we use a tiny built-in.
         const fc = topoToGeo(topo, topo.objects.countries);
         const layer = L.geoJSON(fc, {
           style: () => baseStyle(),
@@ -92,6 +91,10 @@ function Atlas({ data, onSelectCountry }) {
         }).addTo(map);
         layerRef.current = layer;
         applyChoropleth();
+        // Fit the world so every country is visible by default
+        try {
+          map.fitBounds(layer.getBounds(), { padding: [12, 12] });
+        } catch (_) { /* graceful */ }
       })
       .catch((err) => console.warn("world atlas load failed:", err));
 

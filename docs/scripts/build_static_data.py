@@ -494,8 +494,22 @@ def build_continents(countries: dict) -> dict:
     return {"continents": out}
 
 
+def _read_country_yield_2020() -> pd.DataFrame | None:
+    p = ROOT / "CountryCropsCSVs" / "Y2020_country_CropYield.csv"
+    if not p.exists(): return None
+    df = pd.read_csv(p, low_memory=False)
+    df = df.iloc[1:].reset_index(drop=True)
+    for col in df.columns:
+        if col not in ("ISO3", "Country"):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
+
+
 def build_country_detail(countries: dict) -> None:
     dfs: dict[int, pd.DataFrame] = {yr: _read_country_wf(yr) for yr in YEARS}
+    area_2020 = _read_country_area(2020)
+    yield_2020 = _read_country_yield_2020()
+
     crop_codes = sorted({c.split("_")[0] for c in dfs[2020].columns
                          if any(c.endswith(suf) for suf in
                                 ("_RF_WFgn_m3_yr","_IRR_WFgn_m3_yr","_IRR_WFbl_m3_yr"))})
@@ -521,8 +535,14 @@ def build_country_detail(countries: dict) -> None:
                 "total_km3": _round((g + b) / 1e9, 2),
             }
 
+        # Per-crop breakdown — water use + area + yield (RF and IRR) for 2020
         df = dfs[2020]
         row = df[df["ISO3"] == iso]
+        area_row  = (area_2020[area_2020["ISO3"]  == iso].iloc[0]
+                     if (area_2020 is not None and not area_2020[area_2020["ISO3"] == iso].empty) else None)
+        yield_row = (yield_2020[yield_2020["ISO3"] == iso].iloc[0]
+                     if (yield_2020 is not None and not yield_2020[yield_2020["ISO3"] == iso].empty) else None)
+
         crops = []
         if not row.empty:
             row = row.iloc[0]
@@ -535,6 +555,20 @@ def build_country_detail(countries: dict) -> None:
                 tot = g + b
                 if tot <= 0:
                     continue
+
+                # Area (rainfed + irrigated, ha → Mha)
+                area_rf = area_irr = None
+                if area_row is not None:
+                    a_rf  = _safe(area_row.get(f"{code}_RFarea_ha"))
+                    a_irr = _safe(area_row.get(f"{code}_IRRarea_ha"))
+                    area_rf  = _round((a_rf  or 0) / 1e6, 3) if a_rf  is not None else None
+                    area_irr = _round((a_irr or 0) / 1e6, 3) if a_irr is not None else None
+                # Yield (t/ha) under rainfed and irrigated systems
+                yld_rf = yld_irr = None
+                if yield_row is not None:
+                    yld_rf  = _round(_safe(yield_row.get(f"{code}_Yield_RF_ton_ha")),  2)
+                    yld_irr = _round(_safe(yield_row.get(f"{code}_Yield_IRR_ton_ha")), 2)
+
                 crops.append({
                     "code": code,
                     "green_km3": _round(g / 1e9, 3),
@@ -542,9 +576,14 @@ def build_country_detail(countries: dict) -> None:
                     "total_km3": _round(tot / 1e9, 3),
                     "green_pct": round(g / tot * 100) if tot else 0,
                     "blue_pct":  round(b / tot * 100) if tot else 0,
+                    "area_rainfed_Mha":   area_rf,
+                    "area_irrigated_Mha": area_irr,
+                    "area_total_Mha":     _round((area_rf or 0) + (area_irr or 0), 3),
+                    "yield_rainfed_ton_ha":   yld_rf,
+                    "yield_irrigated_ton_ha": yld_irr,
                 })
             crops.sort(key=lambda r: r["total_km3"] or 0, reverse=True)
-        detail["crops"] = crops[:20]
+        detail["crops"] = crops[:30]
 
         with (OUT / "country_detail" / f"{iso}.json").open("w", encoding="utf-8") as f:
             json.dump(detail, f, separators=(",", ":"))

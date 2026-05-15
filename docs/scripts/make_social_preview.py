@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 
 OUT  = Path(__file__).resolve().parents[1] / "social-preview.png"
 DATA = Path(__file__).resolve().parents[1] / "data" / "summary.json"
@@ -21,11 +21,16 @@ PAPER2 = (235, 230, 216)
 INK    = (20, 20, 15)
 INK70  = (74, 72, 66)
 INK40  = (138, 135, 125)
-GREEN  = (45, 90, 61)
+GREEN  = (45, 90, 61)         # wordmark / split-bar colour
 GREEN_SOFT = (126, 163, 107)
-BLUE   = (30, 74, 122)
+BLUE   = (30, 74, 122)        # wordmark / split-bar colour
 BLUE_SOFT = (111, 161, 207)
 GREY_OVERLAP = (216, 214, 207)
+# Brighter, more vivid colours just for the globe brand mark
+GLOBE_GREEN      = (62, 145, 80)
+GLOBE_GREEN_DARK = (22, 80, 40)
+GLOBE_BLUE       = (40, 110, 180)
+GLOBE_BLUE_DARK  = (16, 56, 110)
 
 def _font(names, size):
     for n in names:
@@ -51,104 +56,161 @@ def text(d, xy, s, font, fill):
     d.text(xy, s, font=font, fill=fill)
 
 
-def draw_brand_mark(d, im, cx, cy, size=72):
-    """Two overlapping circles, light-grey intersection, sharp plant in middle.
+def draw_brand_mark(d, im, cx, cy, size=88):
+    """Two overlapping glossy globes (green left, blue right) with world-map
+    grid lines, a white drop at the centre overlap, and a shiny plant inside.
 
-    Renders on a 4× supersampled canvas then downscales for crisp edges.
+    Rendered at 4x supersampling for crisp edges, then downsampled.
     """
-    SS = 4  # supersample factor for sharp circles + plant
-    W2, H2 = size * 3, size * 3
+    SS = 4
+    # Brand mark aspect is wider than tall (two side-by-side globes)
+    W2 = int(size * 1.45)
+    H2 = size
     layer = Image.new("RGBA", (W2 * SS, H2 * SS), (0, 0, 0, 0))
     ld = ImageDraw.Draw(layer)
 
-    # Centre inside the supersampled layer
-    px = W2 * SS // 2
-    py = H2 * SS // 2
-    r = (size * SS) // 2
-    gx, bx = px - r // 2, px + r // 2
+    cx_l = W2 * SS // 2
+    cy_l = H2 * SS // 2
+    r    = int(size * SS * 0.40)
+    # Wider separation so each globe shows a clear coloured crescent on its side
+    gx   = cx_l - int(r * 0.65)
+    bx   = cx_l + int(r * 0.65)
 
-    # Soft shadow under both circles
+    # Soft drop shadow under each globe
     shadow = Image.new("RGBA", layer.size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
-    sd.ellipse((gx - r, py - r + 6 * SS, gx + r, py + r + 6 * SS), fill=(20, 20, 15, 55))
-    sd.ellipse((bx - r, py - r + 6 * SS, bx + r, py + r + 6 * SS), fill=(20, 20, 15, 55))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=6 * SS))
+    sd.ellipse((gx - r, cy_l - r + 5 * SS, gx + r, cy_l + r + 5 * SS), fill=(20, 20, 15, 80))
+    sd.ellipse((bx - r, cy_l - r + 5 * SS, bx + r, cy_l + r + 5 * SS), fill=(20, 20, 15, 80))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=5 * SS))
     layer.alpha_composite(shadow)
 
-    # Filled circles
-    ld.ellipse((gx - r, py - r, gx + r, py + r), fill=GREEN)
-    ld.ellipse((bx - r, py - r, bx + r, py + r), fill=BLUE)
-    # Light-grey intersection (oval centred between the two circle centres)
-    overlap_w = int(r * 1.0)
-    overlap_h = int(r * 1.45)
-    ld.ellipse((px - overlap_w // 2, py - overlap_h // 2,
-                px + overlap_w // 2, py + overlap_h // 2),
-               fill=GREY_OVERLAP)
-    # Bright highlight on top of each circle for a "shining" finish
-    hl = Image.new("RGBA", layer.size, (0, 0, 0, 0))
-    hd = ImageDraw.Draw(hl)
-    hd.ellipse((gx - r + int(r * 0.15), py - r + int(r * 0.15),
-                gx - r + int(r * 0.70), py - r + int(r * 0.55)),
-               fill=(255, 255, 255, 90))
-    hd.ellipse((bx - r + int(r * 0.15), py - r + int(r * 0.15),
-                bx - r + int(r * 0.70), py - r + int(r * 0.55)),
-               fill=(255, 255, 255, 90))
-    hl = hl.filter(ImageFilter.GaussianBlur(radius=3 * SS))
-    layer.alpha_composite(hl)
+    def _gradient_globe(center_x, base_color, dark_color):
+        """Saturated filled circle + opaque inner highlight + thin dark ring."""
+        # Solid fill in vivid colour
+        ld.ellipse((center_x - r, cy_l - r, center_x + r, cy_l + r), fill=base_color)
 
-    # ── Plant icon (sharper: thicker strokes, outlined leaves, glow on drop)
-    # Coordinates in supersampled space; py is the centre.
-    stroke = int(2.4 * SS)
-    leaf_outline = int(1.6 * SS)
+        # Lighter inner ellipse — gives a 3D shaded sphere feel
+        light = tuple(min(255, c + 55) for c in base_color)
+        ld.ellipse((center_x - int(r * 0.55), cy_l - int(r * 0.62),
+                    center_x + int(r * 0.10), cy_l - int(r * 0.18)),
+                    fill=light)
 
-    # Stem
-    ld.line([(px, py + int(size * 0.34) * SS // 2),
-             (px, py - int(size * 0.34) * SS // 2)],
-            fill=(13, 51, 32), width=stroke)
+        # Bright specular dot (top-left) — solid white-ish for a "shining" feel
+        ld.ellipse((center_x - int(r * 0.34), cy_l - int(r * 0.46),
+                    center_x - int(r * 0.10), cy_l - int(r * 0.28)),
+                    fill=(255, 255, 255))
 
-    # Leaves
-    def leaf(points, fill, outline):
-        ld.polygon(points, fill=fill, outline=outline)
-        # second-pass outline for a thicker visible edge
-        ld.line(points + [points[0]], fill=outline, width=leaf_outline, joint="curve")
+        # Thin darker outline ring for the globe edge
+        ld.ellipse((center_x - r, cy_l - r, center_x + r, cy_l + r),
+                   outline=dark_color, width=max(2, int(1.6 * SS)))
 
-    # Left leaf
-    leaf([
-        (px,                            py - int(0.02 * size * SS)),
-        (px - int(size * 0.20 * SS),    py - int(size * 0.06 * SS)),
-        (px - int(size * 0.22 * SS),    py - int(size * 0.20 * SS)),
-        (px - int(size * 0.04 * SS),    py - int(size * 0.10 * SS)),
-    ], fill=GREEN_SOFT, outline=(13, 51, 32))
+    def _grid_lines(center_x):
+        """White world-map grid lines drawn directly with semi-transparent fill.
 
-    # Right leaf (higher up the stem)
-    leaf([
-        (px,                            py - int(size * 0.10 * SS)),
-        (px + int(size * 0.20 * SS),    py - int(size * 0.14 * SS)),
-        (px + int(size * 0.22 * SS),    py - int(size * 0.30 * SS)),
-        (px + int(size * 0.04 * SS),    py - int(size * 0.20 * SS)),
-    ], fill=GREEN_SOFT, outline=(13, 51, 32))
+        We render onto a transparent layer, then alpha_composite (which blends
+        instead of replacing).  A circular mask clips lines that leak outside.
+        """
+        gl = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+        gd = ImageDraw.Draw(gl)
+        lw = max(1, int(0.8 * SS))
+        col = (255, 255, 255, 170)
+        # Parallels (horizontal-ish arcs spanning the full globe width)
+        for dy in (-int(r * 0.55), -int(r * 0.28), 0, int(r * 0.28), int(r * 0.55)):
+            gd.arc((center_x - r, cy_l - r + dy - int(r * 0.05),
+                    center_x + r, cy_l + r + dy + int(r * 0.05)),
+                   start=0, end=180, fill=col, width=lw)
+        # Meridians (vertical ellipses)
+        for rx in (int(r * 0.25), int(r * 0.55)):
+            gd.ellipse((center_x - rx, cy_l - r,
+                        center_x + rx, cy_l + r),
+                       outline=col, width=lw)
+        # Central vertical line
+        gd.line([(center_x, cy_l - r), (center_x, cy_l + r)],
+                fill=col, width=lw)
 
-    # Water drop on top of plant with bright highlight
-    drop_cy = py - int(size * 0.38 * SS)
-    rx, ry = int(size * 0.05 * SS), int(size * 0.07 * SS)
-    ld.ellipse((px - rx, drop_cy - ry, px + rx, drop_cy + ry),
-               fill=BLUE_SOFT, outline=(22, 58, 98), width=int(1.6 * SS))
-    # Glint
-    ld.ellipse((px - rx // 2, drop_cy - ry,
-                px - rx // 2 + rx // 2, drop_cy - ry // 4),
-               fill=(228, 238, 248, 220))
+        # Clip grid layer to the globe circle (multiply its alpha by mask)
+        mask = Image.new("L", layer.size, 0)
+        ImageDraw.Draw(mask).ellipse(
+            (center_x - r, cy_l - r, center_x + r, cy_l + r), fill=255)
+        rgba = gl.split()
+        new_alpha = ImageChops.multiply(rgba[3], mask)
+        gl_clipped = Image.merge("RGBA", (rgba[0], rgba[1], rgba[2], new_alpha))
+        layer.alpha_composite(gl_clipped)
 
-    # Downsample with LANCZOS for crisp edges
+    _gradient_globe(gx, base_color=GLOBE_GREEN, dark_color=GLOBE_GREEN_DARK)
+    _grid_lines(gx)
+    _gradient_globe(bx, base_color=GLOBE_BLUE,  dark_color=GLOBE_BLUE_DARK)
+    _grid_lines(bx)
+
+    # ── White drop / leaf shape at centre overlap ──
+    # Smaller so the green / blue globe crescents stay clearly visible
+    drop_w = int(r * 0.62)
+    drop_h = int(r * 1.05)
+    drop_layer = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+    drop_d = ImageDraw.Draw(drop_layer)
+    # Drop body: vertical leaf via pieslice + polygon
+    drop_d.ellipse((cx_l - drop_w // 2, cy_l - drop_h // 2,
+                    cx_l + drop_w // 2, cy_l + drop_h // 2),
+                   fill=(248, 248, 246), outline=(0, 0, 0, 38), width=max(1, int(0.7 * SS)))
+    # Subtle wet sheen on upper-left of drop
+    sheen = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+    sh = ImageDraw.Draw(sheen)
+    sh.ellipse((cx_l - int(drop_w * 0.45), cy_l - int(drop_h * 0.42),
+                cx_l - int(drop_w * 0.05), cy_l - int(drop_h * 0.05)),
+               fill=(255, 255, 255, 180))
+    sheen = sheen.filter(ImageFilter.GaussianBlur(radius=2 * SS))
+    layer.alpha_composite(drop_layer)
+    layer.alpha_composite(sheen)
+
+    # ── Plant inside drop ──
+    stem_top    = cy_l - int(drop_h * 0.28)
+    stem_bottom = cy_l + int(drop_h * 0.25)
+    ld.line([(cx_l, stem_top), (cx_l, stem_bottom)],
+            fill=(45, 130, 25), width=int(1.8 * SS))
+
+    leaf_outline = (15, 60, 15)
+    leaf_fill    = (110, 200, 70)
+    leaf_bright  = (200, 240, 160)
+
+    # Left leaf (rounded teardrop tilted up-left)
+    left_pts = [
+        (cx_l,                              stem_top + int(r * 0.18)),
+        (cx_l - int(r * 0.42),              stem_top + int(r * 0.08)),
+        (cx_l - int(r * 0.48),              stem_top - int(r * 0.16)),
+        (cx_l - int(r * 0.10),              stem_top - int(r * 0.02)),
+    ]
+    ld.polygon(left_pts, fill=leaf_fill, outline=leaf_outline)
+    ld.line(left_pts + [left_pts[0]], fill=leaf_outline,
+            width=int(1.0 * SS), joint="curve")
+    # left highlight
+    ld.line([(cx_l - int(r * 0.32), stem_top - int(r * 0.08)),
+             (cx_l - int(r * 0.15), stem_top + int(r * 0.0))],
+            fill=leaf_bright, width=int(1.3 * SS))
+
+    # Right leaf (higher, tilted up-right)
+    right_pts = [
+        (cx_l,                              stem_top - int(r * 0.05)),
+        (cx_l + int(r * 0.42),              stem_top - int(r * 0.18)),
+        (cx_l + int(r * 0.48),              stem_top - int(r * 0.42)),
+        (cx_l + int(r * 0.10),              stem_top - int(r * 0.28)),
+    ]
+    ld.polygon(right_pts, fill=leaf_fill, outline=leaf_outline)
+    ld.line(right_pts + [right_pts[0]], fill=leaf_outline,
+            width=int(1.0 * SS), joint="curve")
+    # right highlight
+    ld.line([(cx_l + int(r * 0.18), stem_top - int(r * 0.30)),
+             (cx_l + int(r * 0.36), stem_top - int(r * 0.20))],
+            fill=leaf_bright, width=int(1.3 * SS))
+
+    # Downsample and composite
     final = layer.resize((W2, H2), Image.LANCZOS)
-    # Crop to actual size centred
-    cropped = final.crop(((W2 - size) // 2, (H2 - size) // 2,
-                         (W2 + size) // 2, (H2 + size) // 2))
-    # Composite onto the base image at (cx, cy)
-    im.alpha_composite(cropped.convert("RGBA"), (cx - size // 2, cy - size // 2))
+    im.alpha_composite(final, (cx - W2 // 2, cy - H2 // 2))
 
 
 def draw_logo(d, x, y):
-    """CropGBWater wordmark with bold G(green) + B(blue) + stacked vertical labels."""
+    """CropGBWater wordmark: charcoal Crop + green G + blue B + charcoal Water.
+    Small "Green" / "Blue" labels in their colors are placed ABOVE the G and B.
+    Returns positions so the caller can paint the labels in a second pass."""
     parts = [("Crop", INK), ("G", GREEN), ("B", BLUE), ("Water", INK)]
     cx = x
     positions = {}
@@ -158,27 +220,24 @@ def draw_logo(d, x, y):
         positions[s] = (cx, cx + w)
         cx += w
 
-    # Vertical stacked labels under G and B
     gx0, gx1 = positions["G"]
     bx0, bx1 = positions["B"]
     g_center = int((gx0 + gx1) / 2)
     b_center = int((bx0 + bx1) / 2)
+    return g_center, b_center
 
-    # Rotate text 90° via a transparent overlay
-    def stacked(text_str, center_x, color):
-        bbox = mono_stack.getbbox(text_str)
-        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        txt = Image.new("RGBA", (tw + 4, th + 4), (0, 0, 0, 0))
-        td = ImageDraw.Draw(txt)
-        td.text((2, 2), text_str, font=mono_stack, fill=color)
-        rotated = txt.rotate(90, expand=True, resample=Image.BICUBIC)
-        rw, rh = rotated.size
-        return rotated, rw, rh
 
-    g_img, gw, gh = stacked("GREEN", g_center, GREEN)
-    b_img, bw, bh = stacked("BLUE",  b_center, BLUE)
-    paste_y = y + 38   # under the letter row
-    return g_img, g_center, paste_y, b_img, b_center, paste_y
+def draw_logo_labels(d, g_center, b_center, label_y):
+    """Paint 'Green' (in green) + 'Blue' (in blue) as a single phrase centred
+    above the G/B pair, since the two letters sit adjacent in the wordmark."""
+    center_x = (g_center + b_center) // 2
+    g_w = d.textlength("Green", font=mono_eyebrow_sm)
+    b_w = d.textlength("Blue",  font=mono_eyebrow_sm)
+    gap = 8
+    total_w = g_w + gap + b_w
+    start_x = center_x - total_w // 2
+    d.text((start_x,                label_y), "Green", font=mono_eyebrow_sm, fill=GREEN)
+    d.text((start_x + g_w + gap,    label_y), "Blue",  font=mono_eyebrow_sm, fill=BLUE)
 
 
 def main():
@@ -195,17 +254,20 @@ def main():
     d = ImageDraw.Draw(im)
 
     # ── Brand mark + logo ──
-    draw_brand_mark(d, im, 110, 64, size=72)
-    parts = draw_logo(d, 160, 50)
-    g_img, g_center, paste_y, b_img, b_center, _ = parts
-    # paste vertical labels for G and B
-    gw, gh = g_img.size
-    bw, bh = b_img.size
-    im.paste(g_img, (g_center - gw // 2, paste_y), g_img)
-    im.paste(b_img, (b_center - bw // 2, paste_y), b_img)
+    # Brand mark is wider (two side-by-side globes); place it on the left and
+    # shift the wordmark right past its full width.
+    mark_size  = 130
+    mark_w     = int(mark_size * 1.45)
+    mark_cx, mark_cy = 80 + mark_w // 2, 78
+    draw_brand_mark(d, im, mark_cx, mark_cy, size=mark_size)
+    # Wordmark starts after the brand mark + a small gap
+    wordmark_x = mark_cx + mark_w // 2 + 22
+    g_center, b_center = draw_logo(d, wordmark_x, 56)
+    # "Green" / "Blue" labels centred above the G / B pair
+    draw_logo_labels(d, g_center, b_center, label_y=40)
 
     # ── Eyebrow ──
-    eyebrow_y = 120
+    eyebrow_y = 124
     d.line([(80, eyebrow_y + 12), (134, eyebrow_y + 12)], fill=INK70, width=2)
     text(d, (146, eyebrow_y),
          "ATLAS OF AGRICULTURAL GREEN- AND BLUE WATER USE  ·  2026",

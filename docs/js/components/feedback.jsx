@@ -1,20 +1,33 @@
-// feedback.jsx — Contact page wired to FormSubmit (https://formsubmit.co).
-//
-// FormSubmit posts the form fields directly to abedeme@gmail.com with the
-// subject "CropGBWater – Feedback or Collaboration Request".
-//
-// First-time confirmation: when a form is first submitted with a new
-// destination address, FormSubmit sends ONE activation email to that
-// address. Click the link in that email; afterwards every submission is
-// forwarded automatically — no signup, no API key.
+// feedback.jsx — Contact page. Email is hidden everywhere on the page;
+// the destination is base64-encoded so it doesn't appear in plain text.
+// Posts to FormSubmit; on failure (network/CORS), falls back to a native
+// form submit (full page POST) which works even when fetch() is blocked.
 
-const FORMSUBMIT_TARGET = "abedeme@gmail.com";
-const FORM_ACTION = `https://formsubmit.co/${FORMSUBMIT_TARGET}`;
+// Base64 of "abedeme@gmail.com" — decoded only at submit time so the address
+// is never present in plain HTML or visible text on the page.
+const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";
+const decodeTo = () => {
+  try { return atob(TO_B64); } catch (_) { return ""; }
+};
+
 const EMAIL_SUBJECT = "CropGBWater – Feedback or Collaboration Request";
 
 function FeedbackPage({ data }) {
   const [status, setStatus] = React.useState("idle"); // idle | sending | success | error
   const [error,  setError]  = React.useState(null);
+  const formRef = React.useRef(null);
+
+  const fallbackSubmit = () => {
+    // Force a regular form POST as a fallback. The form's action is set on
+    // demand (so the address is never in the static HTML).
+    const f = formRef.current;
+    if (!f) return;
+    f.action = `https://formsubmit.co/${decodeTo()}`;
+    f.method = "POST";
+    // Remove the AJAX handler so the browser does a regular submit
+    f.onsubmit = null;
+    f.submit();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +36,7 @@ function FeedbackPage({ data }) {
     setError(null);
     try {
       const fd = new FormData(f);
-      // Ask FormSubmit to reply with JSON (so we can render a custom success state).
-      const res = await fetch(`https://formsubmit.co/ajax/${FORMSUBMIT_TARGET}`, {
+      const res = await fetch(`https://formsubmit.co/ajax/${decodeTo()}`, {
         method: "POST",
         headers: { "Accept": "application/json" },
         body: fd,
@@ -35,19 +47,24 @@ function FeedbackPage({ data }) {
         f.reset();
       } else {
         setStatus("error");
-        setError(json.message || "Submission was rejected. Please try the mailto fallback below.");
+        setError("The form server didn't accept the message. Try the email-client fallback below.");
       }
     } catch (err) {
       setStatus("error");
-      setError(err.message || "Network error. Please try the mailto fallback below.");
+      setError("The form couldn't be reached from this browser (network or extension may be blocking it). Use the email-client fallback below.");
     }
   };
 
-  const mailtoFallback = () => {
-    const body = encodeURIComponent(
-      "Name: \n\nEmail: \n\nType (Feedback / Question / Collaboration / Bug): \n\nMessage:\n"
-    );
-    return `mailto:${FORMSUBMIT_TARGET}?subject=${encodeURIComponent(EMAIL_SUBJECT)}&body=${body}`;
+  const openInEmailClient = (e) => {
+    e.preventDefault();
+    const to = decodeTo();
+    const body = "Name: \n\nAffiliation: \n\nType (Feedback / Question / Collaboration / Bug): \n\nMessage:\n";
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(EMAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const tryFallback = (e) => {
+    e.preventDefault();
+    fallbackSubmit();
   };
 
   return (
@@ -61,19 +78,20 @@ function FeedbackPage({ data }) {
           Found a bug, idea, or want to collaborate? Drop a note.
         </h2>
         <p className="module-sub">
-          Messages go straight to <strong>{FORMSUBMIT_TARGET}</strong> with the subject
+          Messages are sent directly to the creator of the atlas with the subject
           &ldquo;CropGBWater – Feedback or Collaboration Request&rdquo;.
-          Plain English is fine; institutional affiliations welcome but not required.
+          Plain English is welcome. Your email is required; institutional affiliation is optional.
         </p>
       </div>
 
       <div className="feedback-grid">
-        <form className="feedback-form" action={FORM_ACTION} method="POST" onSubmit={handleSubmit}>
-          {/* FormSubmit config fields — all begin with underscore */}
+        <form ref={formRef} className="feedback-form" onSubmit={handleSubmit} noValidate>
           <input type="hidden" name="_subject" value={EMAIL_SUBJECT} />
           <input type="hidden" name="_template" value="table" />
           <input type="hidden" name="_captcha" value="false" />
-          {/* Honeypot anti-spam — bots fill this, humans don't see it */}
+          <input type="hidden" name="_next"
+                 value={(typeof window !== "undefined" ? window.location.origin + window.location.pathname : "") + "#contact"} />
+          {/* Honeypot anti-spam */}
           <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
 
           <label className="field">
@@ -82,7 +100,7 @@ function FeedbackPage({ data }) {
           </label>
 
           <label className="field">
-            <span className="field-label">Your email</span>
+            <span className="field-label">Your email <span style={{ color: "var(--accent)" }}>*</span></span>
             <input type="email" name="email" required maxLength={200} placeholder="jane@uni.edu" />
           </label>
 
@@ -93,7 +111,7 @@ function FeedbackPage({ data }) {
 
           <label className="field">
             <span className="field-label">Type of message</span>
-            <select name="type" defaultValue="Feedback">
+            <select name="type" defaultValue="Feedback on the dashboard">
               <option>Feedback on the dashboard</option>
               <option>Methodological question</option>
               <option>Collaboration proposal</option>
@@ -113,20 +131,25 @@ function FeedbackPage({ data }) {
             <button type="submit" className="feedback-submit" disabled={status === "sending"}>
               {status === "sending" ? "Sending…" : "Send message"}
             </button>
-            <a className="feedback-mailto" href={mailtoFallback()} title="Falls back to your email client if the form fails">
-              Or open in email client
+            <a href="#" className="feedback-mailto" onClick={openInEmailClient}
+               title="Opens your default email app with the subject pre-filled">
+              Open in email client instead
             </a>
           </div>
 
           {status === "success" && (
             <div className="feedback-status feedback-success">
-              <strong>Thanks — message sent.</strong> A reply will come from {FORMSUBMIT_TARGET} (usually within a few days).
+              <strong>Thanks — message sent.</strong> A reply will come back to you within a few days.
             </div>
           )}
           {status === "error" && (
             <div className="feedback-status feedback-error">
               <strong>Couldn&rsquo;t send via the form.</strong> {error}
-              {" "}<a href={mailtoFallback()}>Use the mailto link instead</a>.
+              <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <a href="#" onClick={openInEmailClient}>Open in email client</a>
+                <span style={{ color: "var(--ink40)" }}>·</span>
+                <a href="#" onClick={tryFallback}>Retry via full page submit</a>
+              </div>
             </div>
           )}
         </form>
@@ -144,23 +167,20 @@ function FeedbackPage({ data }) {
           </div>
 
           <div className="feedback-card">
-            <h4>Where else to reach us</h4>
+            <h4>Where else to reach the project</h4>
             <ul className="feedback-links">
-              <li><span className="action-key">DOI</span>
+              <li><span className="action-key">Paper</span>
                   <a href={data?.meta?.paper_url} target="_blank" rel="noopener">{data?.meta?.paper_doi}</a></li>
               <li><span className="action-key">Data</span>
                   <a href={data?.meta?.data_url} target="_blank" rel="noopener">Zenodo · {data?.meta?.data_doi}</a></li>
               <li><span className="action-key">Code</span>
                   <a href="https://github.com/AbebeDChukalla/CropGBWater" target="_blank" rel="noopener">github.com/AbebeDChukalla/CropGBWater</a></li>
-              <li><span className="action-key">Email</span>
-                  <a href={mailtoFallback()}>{FORMSUBMIT_TARGET}</a></li>
             </ul>
           </div>
 
           <div className="feedback-note">
-            Privacy: messages are forwarded by FormSubmit.co to a single mailbox and not stored on this site.
-            If you&rsquo;d rather not use the web form, the mailto link opens your default email client with the
-            subject pre-filled.
+            Privacy: messages are forwarded by FormSubmit.co to the project author and not stored on this site.
+            The email address is not displayed on this page — only the subject line is visible to senders.
           </div>
         </aside>
       </div>

@@ -42,14 +42,16 @@ mono_stack      = sp.mono_stack
 
 
 def draw_logo_block(d, im):
-    """Brand mark + CropGBWater wordmark + eyebrow at the top of the frame."""
-    sp.draw_brand_mark(d, im, 110, 64, size=72)
-    g_img, g_center, paste_y, b_img, b_center, _ = sp.draw_logo(d, 160, 50)
-    gw, gh = g_img.size
-    bw, bh = b_img.size
-    im.paste(g_img, (g_center - gw // 2, paste_y), g_img)
-    im.paste(b_img, (b_center - bw // 2, paste_y), b_img)
-    eyebrow_y = 120
+    """Brand mark (globes + drop + plant) + CropGBWater wordmark + eyebrow."""
+    mark_size = 130
+    mark_w    = int(mark_size * 1.45)
+    mark_cx, mark_cy = 80 + mark_w // 2, 78
+    sp.draw_brand_mark(d, im, mark_cx, mark_cy, size=mark_size)
+    wordmark_x = mark_cx + mark_w // 2 + 22
+    g_center, b_center = sp.draw_logo(d, wordmark_x, 56)
+    sp.draw_logo_labels(d, g_center, b_center, label_y=40)
+
+    eyebrow_y = 124
     d.line([(80, eyebrow_y + 12), (134, eyebrow_y + 12)], fill=INK70, width=2)
     d.text((146, eyebrow_y),
            "ATLAS OF AGRICULTURAL GREEN- AND BLUE WATER USE  ·  2026",
@@ -123,24 +125,22 @@ def render_frame(idx, *, summary, continents, groups, countries, change):
                            g20["green_km3"], g20["blue_km3"])
 
     elif idx == 1:
-        # ATLAS — Asia
+        # ATLAS — Asia (no country count to avoid implying "Asia has X countries")
         asia = next((c for c in continents if c["name"] == "Asia"), None)
         share = asia["share_pct"] if asia else 52
-        countries_count = asia["n_countries"] if asia else 46
         kml = round(asia["total_km3"]) if asia else 3525
         y = 220
         d.text((80, y), "Asia consumes", font=serif_lg, fill=INK); y += 92
         s = f"{share:.0f}%"
         d.text((80, y), s, font=serif_xl, fill=GREEN)
         w = d.textlength(s, font=serif_xl)
-        d.text((80 + w + 18, y), "of all crop water,", font=serif_lg, fill=INK); y += 92
-        d.text((80, y), "across ", font=serif_lg, fill=INK)
-        w = d.textlength("across ", font=serif_lg)
-        s2 = f"{countries_count} "
-        d.text((80 + w, y), s2, font=serif_xl, fill=BLUE)
-        w2 = d.textlength(s2, font=serif_xl)
-        d.text((80 + w + w2, y), "countries.", font=serif_lg, fill=INK40); y += 78
-        d.text((80, y), f"≈ {kml:,} km³/yr · more than Africa + Europe + Americas combined.",
+        d.text((80 + w + 18, y), "of all crop water —", font=serif_lg, fill=INK); y += 92
+        d.text((80, y), "more than ", font=serif_lg, fill=INK)
+        w = d.textlength("more than ", font=serif_lg)
+        d.text((80 + w, y), "everywhere", font=serif_xl, fill=BLUE)
+        w2 = d.textlength("everywhere", font=serif_xl)
+        d.text((80 + w + w2, y), " else combined.", font=serif_lg, fill=INK40); y += 78
+        d.text((80, y), f"≈ {kml:,} km³/yr in 2020.",
                font=mono_eyebrow, fill=INK70)
 
     elif idx == 2:
