@@ -5,7 +5,7 @@
 **Project**: ***Foresight Initiative: Global Gridded Crop Water Demand 2020 (G2CWD)***
 
 <br/>**September 2023**
-
+![CropGBWater dashboard animation](docs/social-preview.gif)
 ![title](CropGBWaterIMG.PNG)
 
 **Authors:** 
