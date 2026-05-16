@@ -1,0 +1,89 @@
+{
+  "basins": [
+    {
+      "basin": "Indus",
+      "ws_2010": 105.99,
+      "ws_2020": 130.27,
+      "delta_pct": 22.9
+    },
+    {
+      "basin": "Ganges",
+      "ws_2010": 110.46,
+      "ws_2020": 121.12,
+      "delta_pct": 9.7
+    },
+    {
+      "basin": "Yellow river",
+      "ws_2010": 47.91,
+      "ws_2020": 51.31,
+      "delta_pct": 7.1
+    },
+    {
+      "basin": "Colorado",
+      "ws_2010": 38.18,
+      "ws_2020": 46.08,
+      "delta_pct": 20.7
+    },
+    {
+      "basin": "Murray",
+      "ws_2010": 10.23,
+      "ws_2020": 25.56,
+      "delta_pct": 149.8
+    },
+    {
+      "basin": "Nile",
+      "ws_2010": 21.75,
+      "ws_2020": 24.25,
+      "delta_pct": 11.5
+    },
+    {
+      "basin": "Mississippi",
+      "ws_2010": 23.84,
+      "ws_2020": 23.56,
+      "delta_pct": -1.2
+    },
+    {
+      "basin": "Yangtze",
+      "ws_2010": 18.88,
+      "ws_2020": 22.68,
+      "delta_pct": 20.2
+    },
+    {
+      "basin": "Mekong",
+      "ws_2010": 8.44,
+      "ws_2020": 15.43,
+      "delta_pct": 82.7
+    },
+    {
+      "basin": "Niger",
+      "ws_2010": 6.97,
+      "ws_2020": 14.2,
+      "delta_pct": 103.9
+    },
+    {
+      "basin": "Orange",
+      "ws_2010": 10.17,
+      "ws_2020": 7.32,
+      "delta_pct": -28.0
+    },
+    {
+      "basin": "Danube",
+      "ws_2010": 5.52,
+      "ws_2020": 5.78,
+      "delta_pct": 4.8
+    },
+    {
+      "basin": "Zambezi",
+      "ws_2010": 0.85,
+      "ws_2020": 0.91,
+      "delta_pct": 7.7
+    },
+    {
+      "basin": "Congo",
+      "ws_2010": 0.23,
+      "ws_2020": 0.23,
+      "delta_pct": -2.8
+    }
+  ],
+  "source": "Chukalla et al. 2025, Nature Food, Figure 5"
+}

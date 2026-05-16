@@ -176,9 +176,11 @@ function TopBar({ meta, pages, active, onNavigate }) {
   const [navOpen, setNavOpen] = React.useState(false);
   return (
     <header className="topbar">
-      <button className="brand" onClick={() => onNavigate("overview")} aria-label="CropGBWater home">
-        <BrandMark size={50} />
-        <Logo />
+      <button className="brand brand-img" onClick={() => onNavigate("overview")} aria-label="CropGBWater home">
+        <img src="Loggo_CropGBWater_clean.png"
+             alt="CropGBWater"
+             className="brand-logo-img"
+             width="280" height="84" />
       </button>
 
       <button className="topnav-toggle"

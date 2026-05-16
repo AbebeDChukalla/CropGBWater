@@ -3,13 +3,10 @@
 // third-party form host that can break). Includes simple inline validation
 // and a loading state.
 
-const TO_LIST_B64 = [
-  "YWJlZGVtZUBnbWFpbC5jb20=",        // abedeme@gmail.com
-  "YS5jaHVrYWxsYUB1bi1paGUub3Jn",    // a.chukalla@un-ihe.org
-];
-const decodeAll = () => TO_LIST_B64
-  .map((s) => { try { return atob(s); } catch (_) { return ""; } })
-  .filter(Boolean);
+// Single destination address, base64-encoded so it isn't in plain HTML.
+// Decoded only at submit/click time.
+const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";    // abedeme@gmail.com
+const decodeTo = () => { try { return atob(TO_B64); } catch (_) { return ""; } };
 const EMAIL_SUBJECT = "CropGBWater – Feedback or Collaboration Request";
 
 function FeedbackPage({ data }) {
@@ -56,8 +53,7 @@ function FeedbackPage({ data }) {
       `— sent via the CropGBWater dashboard`,
     ].filter((l) => l !== null).join("\n");
 
-    const recipients = decodeAll().join(",");
-    const url = `mailto:${recipients}`
+    const url = `mailto:${decodeTo()}`
               + `?subject=${encodeURIComponent(EMAIL_SUBJECT)}`
               + `&body=${encodeURIComponent(body)}`;
 
@@ -73,17 +69,15 @@ function FeedbackPage({ data }) {
       <div className="module-head">
         <div className="module-eyebrow">
           <span className="eyebrow-mark" />
-          <span>Module 07 / Contact · Feedback · Collaboration</span>
+          <span>Module 07 / Feedback · Collaboration</span>
         </div>
         <h2 className="module-title">
           Reach the creator of the CropGBWater Atlas.
         </h2>
         <p className="module-sub">
-          Messages go directly to the creator/author of the CropGBWater Atlas for
-          feedback, scientific collaboration, data inquiries, educational use, or
-          partnership opportunities. The subject line is set to
-          &ldquo;{EMAIL_SUBJECT}&rdquo;. Your email is required; institutional
-          affiliation is optional.
+          We are looking forward to your feedback on the Atlas, scientific
+          collaboration, data inquiries, educational use, or partnership
+          opportunities.
         </p>
       </div>
 
@@ -157,14 +151,11 @@ function FeedbackPage({ data }) {
 
         <aside className="feedback-aside">
           <div className="feedback-card">
-            <h4>Contact addresses</h4>
+            <h4>Contact email</h4>
             <ul className="feedback-links">
-              <li><span className="action-key">Author</span>
-                  <button type="button" className="reveal-email" data-email-b64={TO_LIST_B64[0]}
+              <li><span className="action-key">Email</span>
+                  <button type="button" className="reveal-email" data-email-b64={TO_B64}
                           onClick={revealAndCopy}>abedeme@gmail.com</button></li>
-              <li><span className="action-key">Inst.</span>
-                  <button type="button" className="reveal-email" data-email-b64={TO_LIST_B64[1]}
-                          onClick={revealAndCopy}>a.chukalla@un-ihe.org</button></li>
             </ul>
             <span className="feedback-note-inline">Click to copy to clipboard.</span>
           </div>

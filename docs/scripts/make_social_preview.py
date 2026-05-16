@@ -253,39 +253,41 @@ def main():
     im = Image.new("RGBA", (W, H), PAPER + (255,))
     d = ImageDraw.Draw(im)
 
-    # ── Brand mark + logo ──
-    # Brand mark is wider (two side-by-side globes); place it on the left and
-    # shift the wordmark right past its full width.
-    mark_size  = 130
-    mark_w     = int(mark_size * 1.45)
-    mark_cx, mark_cy = 80 + mark_w // 2, 78
-    draw_brand_mark(d, im, mark_cx, mark_cy, size=mark_size)
-    # Wordmark starts after the brand mark + a small gap
-    wordmark_x = mark_cx + mark_w // 2 + 22
-    g_center, b_center = draw_logo(d, wordmark_x, 56)
-    # "Green" / "Blue" labels centred above the G / B pair
-    draw_logo_labels(d, g_center, b_center, label_y=40)
+    # ── Brand: paste the actual final logo PNG (cleaned, alpha-keyed) ──
+    logo_path = OUT.parent / "Loggo_CropGBWater_clean.png"
+    if not logo_path.exists():
+        logo_path = OUT.parent / "Loggo_CropGBWater_final.PNG"
+    if logo_path.exists():
+        logo = Image.open(logo_path).convert("RGBA")
+        # Scale to a tall, readable size (height 110 px on a 630-tall canvas)
+        target_h = 110
+        scale = target_h / logo.height
+        logo = logo.resize((int(logo.width * scale), target_h), Image.LANCZOS)
+        im.alpha_composite(logo, (80, 28))
+    else:
+        # fallback to the old vector mark
+        draw_brand_mark(d, im, 145, 78, size=130)
 
     # ── Eyebrow ──
-    eyebrow_y = 124
+    eyebrow_y = 156
     d.line([(80, eyebrow_y + 12), (134, eyebrow_y + 12)], fill=INK70, width=2)
     text(d, (146, eyebrow_y),
          "ATLAS OF AGRICULTURAL GREEN- AND BLUE WATER USE  ·  2026",
          mono_eyebrow, INK70)
 
     # ── Editorial headline ──
-    y = 220
+    y = 210
     text(d, (80, y), "The world’s farms drink", serif_lg, INK)
-    y += 92
+    y += 84
     pct_str = f"{round(change['total_pct'])}%"
     text(d, (80, y), pct_str, serif_xl, BLUE)
     pct_w = d.textlength(pct_str, font=serif_xl)
     text(d, (80 + pct_w + 18, y), "more water than", serif_lg, INK)
-    y += 92
+    y += 84
     text(d, (80, y), "they did ", serif_lg, INK)
     they_w = d.textlength("they did ", font=serif_lg)
     text(d, (80 + they_w, y), "a decade ago.", serif_xl, INK40)
-    y += 86
+    y += 78
 
     # ── Green / Blue use split bar ──
     bar_x, bar_w, bar_h = 80, 1040, 84

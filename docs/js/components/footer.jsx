@@ -80,14 +80,15 @@ function MethodFooter({ data }) {
           <div className="citation-block" style={{ marginTop: 14 }}>
             <h4>Methodology &amp; metadata</h4>
             <p className="citation-text" style={{ fontSize: 13.5, lineHeight: 1.6 }}>
-              Crop water consumption is estimated at a <strong>{m.resolution}</strong> using a coupled
-              crop-growth and hydrological model (<strong>{m.model}</strong>). Green water consumption is
-              partitioned from precipitation reaching the root zone; blue water consumption is the
-              irrigation fraction sourced from surface and groundwater withdrawals. Grid cells are
-              aggregated to country totals via SPAM-derived cropland masks.
-              Full methodology, variable definitions, and uncertainty bounds are documented in the
-              paper Supplementary Information; metadata for the gridded NetCDF outputs is in the
-              Zenodo archive&rsquo;s <code>README</code>.
+              Crop water consumption is estimated at a <strong>{m.resolution}</strong> for 46 crops
+              across three reference years (2000, 2010, 2020). Green water consumption is the
+              portion of precipitation absorbed from the root zone by rainfed and irrigated crops;
+              blue water consumption is the portion withdrawn from surface and groundwater to
+              irrigate crops. Pixel-level estimates are aggregated to crop, country, continent and
+              global totals using SPAM-derived cropland masks.
+              Full methodology, input datasets, variable definitions, equations, and uncertainty
+              treatment are documented in the paper&rsquo;s Methods + Supplementary Information,
+              and the dataset README on Zenodo.
             </p>
             <div className="citation-actions">
               <a href={`${m.paper_url}#Sec`} target="_blank" rel="noopener">↗ Supplementary information</a>
@@ -102,7 +103,6 @@ function MethodFooter({ data }) {
             <Meta label="Coverage"     value={`${m.n_crops} crops · ${m.n_countries} countries · ${m.n_continents} continents`} />
             <Meta label="Resolution"   value={m.resolution} />
             <Meta label="Time range"   value={m.years.join(", ")} />
-            <Meta label="Model"        value={m.model} />
             <Meta label="License"      value={m.license} />
             <Meta label="Paper DOI"    value={<a href={m.paper_url} target="_blank" rel="noopener">{m.paper_doi}</a>} />
             <Meta label="Dataset DOI"  value={<a href={m.data_url}  target="_blank" rel="noopener">{m.data_doi}</a>} />

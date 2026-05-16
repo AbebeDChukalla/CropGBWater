@@ -87,6 +87,7 @@ function App() {
         </Module>
         <Module id="trends" active={page === "trends"}>
           <Trends data={data} />
+          <BasinStress />
         </Module>
         <Module id="crops" active={page === "crops"}>
           <CropExplorer data={data} />

@@ -90,22 +90,16 @@ function CropExplorer({ data }) {
 function ProductionStrip({ data }) {
   const g = data.summary.global["2020"];
   const c = data.summary.change_2010_2020;
+  // Note: total production and average yield are intentionally NOT shown
+  // here — they're meaningless when aggregated across 46 different crops.
+  // Per-crop production and yield are surfaced on the country sheet and
+  // the per-crop cards below.
   return (
     <div className="prod-strip">
-      <div className="prod-cell">
-        <span className="prod-cell-label">Crop production, 2020</span>
-        <span className="prod-cell-val"><span className="num">{CGBW.fmt.km3(g.production_Mt)}</span><i>Mt</i></span>
-        <span className="prod-cell-meta">{CGBW.fmt.pct(c.production_pct)} vs 2010</span>
-      </div>
       <div className="prod-cell">
         <span className="prod-cell-label">Harvested area, 2020</span>
         <span className="prod-cell-val"><span className="num">{CGBW.fmt.km3(g.area_Mha)}</span><i>Mha</i></span>
         <span className="prod-cell-meta">{CGBW.fmt.pct(c.area_pct)} vs 2010</span>
-      </div>
-      <div className="prod-cell">
-        <span className="prod-cell-label">Average yield, 2020</span>
-        <span className="prod-cell-val"><span className="num">{g.yield_ton_ha?.toFixed(2)}</span><i>t/ha</i></span>
-        <span className="prod-cell-meta">{CGBW.fmt.pct(c.yield_pct)} vs 2010</span>
       </div>
       <div className="prod-cell" style={{ borderRight: 0 }}>
         <span className="prod-cell-label">Irrigated cropland share</span>

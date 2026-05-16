@@ -23,7 +23,7 @@
   --gut: clamp(20px, 3vw, 56px);
   --max: 1480px;
 
-  --topbar-h: 64px;
+  --topbar-h: 92px;       /* taller so the bigger PNG logo fits without crop */
   --pagenav-h: 64px;
 
   /* base typography — bumped for readability */
@@ -31,6 +31,23 @@
   --fs-sm:   13px;
   --fs-xs:   11.5px;
   --fs-mono: 12px;
+}
+
+/* PNG logo (used in topbar) */
+.brand-img {
+  padding: 4px 0; gap: 0; background: transparent; border: 0;
+  display: inline-flex; align-items: center;
+  cursor: pointer;
+}
+.brand-logo-img {
+  height: 80px;          /* much larger than the previous SVG mark */
+  width: auto;
+  display: block;
+  transition: transform .2s ease-out;
+}
+.brand:hover .brand-logo-img { transform: scale(1.03); }
+@media (max-width: 720px) {
+  .brand-logo-img { height: 56px; }
 }
 
 * { box-sizing: border-box; min-width: 0; }
@@ -1192,8 +1209,12 @@ body[data-loading="0"] .boot { display: none; }
 .cta-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: 14px;
+  /* Generous breathing room above + below so the CTAs never sit on top of
+     the Highlights rotator above or the Why-It-Matters cards below */
+  margin: clamp(28px, 4vh, 48px) 0 clamp(20px, 3vh, 36px);
+  padding-top: clamp(18px, 2.5vh, 28px);
+  border-top: 0.5px solid var(--line);
   animation: rise .55s .25s cubic-bezier(.22,.61,.36,1) both;
 }
 .cta-card {
@@ -1381,6 +1402,75 @@ body[data-loading="0"] .boot { display: none; }
   font-size: 13px; line-height: 1.55; color: var(--ink70);
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* ─── Comparison · river-basin water stress ───────────────────────── */
+.basin-stress {
+  margin-top: clamp(28px, 4vh, 56px);
+  padding-top: clamp(20px, 3vh, 40px);
+  border-top: 0.5px solid var(--line);
+}
+.bs-toolbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 16px 0 12px;
+  padding-bottom: 10px; border-bottom: 0.5px solid var(--line);
+}
+.bs-toolbar-label {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink40); margin-right: 4px;
+}
+.bs-legend {
+  display: inline-flex; gap: 14px;
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: var(--ink70);
+}
+.bs-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.bs-list { list-style: none; padding: 0; margin: 0; }
+.bs-row {
+  display: grid;
+  grid-template-columns: 32px minmax(110px, 1fr) minmax(0, 3.6fr) minmax(74px, auto);
+  align-items: center; gap: 14px;
+  padding: 10px 0; border-bottom: 0.5px solid var(--line);
+  animation: rise .4s ease-out both;
+}
+.bs-pos { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink40); letter-spacing: 0.05em; }
+.bs-name {
+  font-family: var(--font-display); font-size: 16px; line-height: 1;
+  letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bs-bars { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bs-bar {
+  position: relative; height: 11px; border-radius: 2px;
+  background: var(--paper2);
+  overflow: hidden;
+  display: flex; align-items: center;
+}
+.bs-bar i {
+  display: block; height: 100%;
+  animation: grow-x .55s ease-out both; transform-origin: left;
+}
+.bs-bar-2010 i { background: var(--blueSoft); }
+.bs-bar-2020 i { background: var(--blue); }
+.bs-bar-label {
+  position: absolute; right: 8px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink70); pointer-events: none;
+  text-shadow: 0 0 4px var(--paper);
+}
+.bs-delta {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  text-align: right; letter-spacing: -0.01em; white-space: nowrap;
+}
+.bs-delta.tone-very-high { color: var(--accent); }
+.bs-delta.tone-high      { color: var(--accent); opacity: 0.85; }
+.bs-delta.tone-mid       { color: var(--ink); }
+.bs-delta.tone-low       { color: var(--ink40); }
+.bs-delta.tone-neg       { color: var(--blueSoft); }
+.bs-source {
+  margin-top: 12px;
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--ink40);
+  line-height: 1.45;
 }
 
 /* ─── Responsive breakpoints ───────────────────────────────────────── */
