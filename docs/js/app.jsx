@@ -80,6 +80,7 @@ function App() {
         <Module id="overview" active={page === "overview"}>
           <Hero data={data} />
           <Highlights data={data} onNavigate={setPage} />
+          <OverviewExtras data={data} onNavigate={setPage} />
         </Module>
         <Module id="atlas" active={page === "atlas"}>
           <Atlas data={data} onSelectCountry={setActiveISO} />
