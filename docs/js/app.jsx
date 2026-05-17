@@ -87,7 +87,7 @@ function App() {
         </Module>
         <Module id="trends" active={page === "trends"}>
           <Trends data={data} />
-          <BasinStress />
+          {/* BasinStress temporarily removed to isolate render error */}
         </Module>
         <Module id="crops" active={page === "crops"}>
           <CropExplorer data={data} />

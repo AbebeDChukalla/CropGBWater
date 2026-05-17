@@ -1,8 +1,23 @@
-// trends.jsx — Global green / blue / total water-use chart (2000-2020).
-// Deliberately minimal and matches the v1.5 working version, with only
-// guards added against missing numeric fields so it always renders.
+// trends.jsx — Global green / blue / total water-use chart (2000-2020)
+// + a Top-5 crops yield + water-productivity comparison.
+// Deliberately minimal and table-based so it always renders.
+
+const TOP5_CODES = ["RICE", "MAIZ", "WHEA", "SOYB", "SUGC"];
+const TOP5_DOTS  = {
+  RICE: "#1e4a7a", MAIZ: "#9b9b3d", WHEA: "#c9883b",
+  SOYB: "#7e5ca0", SUGC: "#4a7d4d",
+};
 
 function Trends({ data }) {
+  return (
+    <React.Fragment>
+      <GlobalTrend data={data} />
+      <Top5CropComparison data={data} />
+    </React.Fragment>
+  );
+}
+
+function GlobalTrend({ data }) {
   const years = (data.summary && data.summary.years) || [2000, 2010, 2020];
 
   const g = (yr, key) => {
@@ -101,7 +116,7 @@ function Trends({ data }) {
               <i>%</i>
             </div>
             <div className="callout-detail">
-              +{fmtInt(g(2020,"total") - g(2010,"total"))} km³/yr · matches the paper&rsquo;s headline.
+              +{fmtInt(g(2020,"total") - g(2010,"total"))} km³/yr.
             </div>
           </div>
           <div className="callout">
@@ -130,6 +145,105 @@ function Trends({ data }) {
       </div>
     </section>
   );
+}
+
+// ─── Top-5 crops: yield (RF/IRR) + water productivity (WP) ────────────
+function Top5CropComparison({ data }) {
+  const years = (data.summary && data.summary.years) || [2000, 2010, 2020];
+  const cropsArr = (data.crops && data.crops.crops) || [];
+  const cropsIdx = {};
+  cropsArr.forEach((c) => { if (c && c.code) cropsIdx[c.code] = c; });
+
+  // For one crop + one year, derive RF yield, IRR yield, total WP.
+  function getMetrics(crop, year) {
+    if (!crop) return { yr: null, yi: null, wp: null };
+    const yKey = String(year);
+    const ah = (crop.area_history       || {})[yKey] || {};
+    const ph = (crop.production_history || {})[yKey] || {};
+    const wat = crop[yKey] || {};
+
+    const aRf  = num(ah.area_rainfed_Mha);
+    const aIrr = num(ah.area_irrigated_Mha);
+    const pRf  = num(ph.production_rainfed_Mt);
+    const pIrr = num(ph.production_irrigated_Mt);
+    const prod = num(ph.production_Mt);
+    const km3  = num(wat.total_km3);
+
+    // Mt / Mha == t/ha
+    const yr = aRf  > 0 ? pRf  / aRf  : null;
+    const yi = aIrr > 0 ? pIrr / aIrr : null;
+    // production_Mt × 1e9 kg  /  total_km3 × 1e9 m³  = kg/m³
+    const wp = km3 > 0 ? prod / km3 : null;
+    return { yr, yi, wp };
+  }
+
+  // Build a small table for one metric.
+  function MetricTable({ title, metricKey, unit, dp }) {
+    const fmt = (v) => v == null || isNaN(v) ? "—" : v.toFixed(dp);
+    return (
+      <div className="cmp-block">
+        <h4 className="cmp-title">{title} <span className="cmp-unit">({unit})</span></h4>
+        <table className="cmp-table">
+          <thead>
+            <tr>
+              <th>Crop</th>
+              {years.map((y) => <th key={y}>{y}</th>)}
+              <th>Δ 2010→2020</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TOP5_CODES.map((code) => {
+              const crop = cropsIdx[code];
+              const vals = years.map((y) => getMetrics(crop, y)[metricKey]);
+              const d10 = vals[1], d20 = vals[2];
+              const delta = (d10 != null && d20 != null && d10 !== 0)
+                ? (d20 - d10) / d10 * 100 : null;
+              return (
+                <tr key={code}>
+                  <td>
+                    <span className="cmp-dot" style={{ background: TOP5_DOTS[code] }} />
+                    {(crop && crop.name) || code}
+                  </td>
+                  {vals.map((v, i) => <td key={i}>{fmt(v)}</td>)}
+                  <td className="cmp-delta">
+                    {delta == null ? "—" : (delta > 0 ? "+" : "") + delta.toFixed(1) + "%"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <section className="cmp-section" data-screen-label="05b Top-5 crops comparison">
+      <div className="module-eyebrow" style={{ marginBottom: 6 }}>
+        <span className="eyebrow-mark" />
+        <span>Top-5 crops · yield + water productivity</span>
+      </div>
+      <h2 className="module-title" style={{ marginTop: 8, fontSize: "clamp(22px, 2.4vw, 32px)" }}>
+        Five major crops, three decades — what changed.
+      </h2>
+      <p className="module-sub" style={{ marginBottom: 18 }}>
+        Yield is computed as production ÷ harvested area, separately for rainfed and
+        irrigated systems. Water productivity (WP) is production ÷ total water
+        consumption (kg per m³).
+      </p>
+
+      <div className="cmp-grid">
+        <MetricTable title="Yield, rainfed"   metricKey="yr" unit="t/ha"  dp={2} />
+        <MetricTable title="Yield, irrigated" metricKey="yi" unit="t/ha"  dp={2} />
+        <MetricTable title="Water productivity" metricKey="wp" unit="kg/m³" dp={2} />
+      </div>
+    </section>
+  );
+}
+
+function num(v) {
+  const n = typeof v === "number" ? v : parseFloat(v);
+  return Number.isFinite(n) ? n : 0;
 }
 
 window.Trends = Trends;
