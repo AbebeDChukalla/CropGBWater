@@ -1404,6 +1404,15 @@ body[data-loading="0"] .boot { display: none; }
   overflow-wrap: anywhere;
 }
 
+/* ─── Feedback · single-link layout (no form) ────────────────────── */
+.feedback-links-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  max-width: 720px;
+  margin-top: clamp(20px, 3vh, 36px);
+}
+
 /* ─── Feedback · protected email + WantToHear cards ──────────────── */
 .protected-email {
   display: inline-flex; align-items: baseline; gap: 10px;
@@ -1429,8 +1438,9 @@ body[data-loading="0"] .boot { display: none; }
   text-underline-offset: 3px;
   font-weight: 500;
   cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
 }
-.protected-email-link span { display: inline; }
+.protected-email-lock { font-size: 12px; opacity: 0.85; }
 .protected-email-link:hover { color: var(--ink); }
 
 .wth { margin-top: clamp(20px, 3vh, 36px); }
@@ -1663,8 +1673,34 @@ body[data-loading="0"] .boot { display: none; }
   color: var(--ink40); margin-top: 4px;
 }
 
-@media (max-width: 900px) {
-  .trend-frame-crops { grid-template-columns: 1fr; gap: 14px; }
+.crop-trend-svg { width: 100%; height: auto; max-height: 50vh; margin: 12px 0; }
+
+.trend-table-wrap { width: 100%; overflow-x: auto; margin-top: 14px; }
+.trend-table {
+  width: 100%; min-width: 540px;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+}
+.trend-table th, .trend-table td {
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 0.5px solid var(--line);
+  white-space: nowrap;
+}
+.trend-table th:first-child, .trend-table td:first-child { text-align: left; }
+.trend-table thead th {
+  background: var(--paper2);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink40);
+}
+.trend-table-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 8px; vertical-align: middle;
 }
 
 /* ─── Comparison · river-basin water stress ───────────────────────── */

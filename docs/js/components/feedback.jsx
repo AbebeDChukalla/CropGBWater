@@ -1,69 +1,12 @@
-// feedback.jsx — Contact page. Two destination addresses are displayed (and
-// encoded), the message is delivered via the user's local email client (no
-// third-party form host that can break). Includes simple inline validation
-// and a loading state.
+// feedback.jsx — Contact page. The address is base64-encoded and only
+// revealed when the user clicks the protected mailto chip. No form/box;
+// only a single clickable email link + interactive cards.
 
-// Single destination address, base64-encoded so it isn't in plain HTML.
-// Decoded only at submit/click time.
-const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";    // abedeme@gmail.com
+const TO_B64 = "YWJlZGVtZUBnbWFpbC5jb20=";
 const decodeTo = () => { try { return atob(TO_B64); } catch (_) { return ""; } };
 const EMAIL_SUBJECT = "CropGBWater – Feedback or Collaboration Request";
 
 function FeedbackPage({ data }) {
-  const [status, setStatus] = React.useState("idle"); // idle | sending | success
-  const [errs, setErrs] = React.useState({});
-
-  const validate = (fd) => {
-    const e = {};
-    const name    = (fd.get("name")    || "").toString().trim();
-    const email   = (fd.get("email")   || "").toString().trim();
-    const message = (fd.get("message") || "").toString().trim();
-    if (!name) e.name = "Name is required.";
-    if (!email) e.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Please enter a valid email address.";
-    if (!message || message.length < 10) e.message = "Message must be at least 10 characters.";
-    return e;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const f = e.currentTarget;
-    const fd = new FormData(f);
-    const e2 = validate(fd);
-    setErrs(e2);
-    if (Object.keys(e2).length) return;
-
-    setStatus("sending");
-
-    const name        = fd.get("name").toString().trim();
-    const email       = fd.get("email").toString().trim();
-    const affiliation = (fd.get("affiliation") || "").toString().trim();
-    const type        = (fd.get("type") || "Feedback").toString().trim();
-    const message     = fd.get("message").toString().trim();
-
-    const body = [
-      `Name:        ${name}`,
-      `Email:       ${email}`,
-      affiliation ? `Affiliation: ${affiliation}` : null,
-      `Type:        ${type}`,
-      ``,
-      `Message:`,
-      message,
-      ``,
-      `— sent via the CropGBWater dashboard`,
-    ].filter((l) => l !== null).join("\n");
-
-    const url = `mailto:${decodeTo()}`
-              + `?subject=${encodeURIComponent(EMAIL_SUBJECT)}`
-              + `&body=${encodeURIComponent(body)}`;
-
-    // Tiny delay so the loading state is visible (perception polish)
-    setTimeout(() => {
-      window.location.href = url;
-      setStatus("success");
-    }, 350);
-  };
-
   return (
     <section className="feedback">
       <div className="module-head">
@@ -83,146 +26,47 @@ function FeedbackPage({ data }) {
         <WantToHear />
       </div>
 
-      <div className="feedback-grid">
-        <form className="feedback-form" onSubmit={handleSubmit} noValidate>
-          <label className="field">
-            <span className="field-label">Your name <span className="req">*</span></span>
-            <input type="text" name="name" required maxLength={120} placeholder="Dr. Jane Doe"
-                   aria-invalid={!!errs.name}
-                   className={errs.name ? "field-err" : ""} />
-            {errs.name && <span className="field-msg">{errs.name}</span>}
-          </label>
-
-          <label className="field">
-            <span className="field-label">Your email <span className="req">*</span></span>
-            <input type="email" name="email" required maxLength={200} placeholder="jane@uni.edu"
-                   aria-invalid={!!errs.email}
-                   className={errs.email ? "field-err" : ""} />
-            {errs.email && <span className="field-msg">{errs.email}</span>}
-          </label>
-
-          <label className="field">
-            <span className="field-label">Affiliation (optional)</span>
-            <input type="text" name="affiliation" maxLength={200} placeholder="University, lab, or organisation" />
-          </label>
-
-          <label className="field">
-            <span className="field-label">Type of message</span>
-            <select name="type" defaultValue="Feedback on the dashboard">
-              <option>Feedback on the dashboard</option>
-              <option>Methodological question</option>
-              <option>Collaboration proposal</option>
-              <option>Data inquiry</option>
-              <option>Educational / teaching use</option>
-              <option>Partnership opportunity</option>
-              <option>Bug or data issue</option>
-              <option>Press / media enquiry</option>
-              <option>Other</option>
-            </select>
-          </label>
-
-          <label className="field field-message">
-            <span className="field-label">Message <span className="req">*</span></span>
-            <textarea name="message" required rows={7} maxLength={4000}
-                      aria-invalid={!!errs.message}
-                      className={errs.message ? "field-err" : ""}
-                      placeholder="What's on your mind? Be as specific as you'd like — paste links, mention dataset versions, or describe what you'd want the dashboard to do next." />
-            {errs.message && <span className="field-msg">{errs.message}</span>}
-            {/* Honeypot anti-spam */}
-            <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
-          </label>
-
-          <div className="feedback-actions">
-            <button type="submit" className="feedback-submit" disabled={status === "sending"}>
-              {status === "sending" ? (
-                <span className="spinner" aria-hidden="true" />
-              ) : null}
-              {status === "sending" ? "Opening email…" : "Send message"}
-            </button>
-            <span className="feedback-mailto-hint">Opens in your default email app</span>
-          </div>
-
-          {status === "success" && (
-            <div className="feedback-status feedback-success">
-              <strong>Email client opened.</strong> Click &ldquo;Send&rdquo; in your email
-              app to deliver the message. If nothing opened, check your browser&rsquo;s pop-up
-              settings or write directly to one of the addresses on the right.
-            </div>
-          )}
-        </form>
-
-        <aside className="feedback-aside">
-          <div className="feedback-card">
-            <h4>Contact email</h4>
-            <ul className="feedback-links">
-              <li><span className="action-key">Email</span>
-                  <button type="button" className="reveal-email" data-email-b64={TO_B64}
-                          onClick={revealAndCopy}>abedeme@gmail.com</button></li>
-            </ul>
-            <span className="feedback-note-inline">Click to copy to clipboard.</span>
-          </div>
-
-          <div className="feedback-card">
-            <h4>Where else to reach the project</h4>
-            <ul className="feedback-links">
-              <li><span className="action-key">Paper</span>
-                  <a href={data?.meta?.paper_url} target="_blank" rel="noopener">{data?.meta?.paper_doi}</a></li>
-              <li><span className="action-key">Data</span>
-                  <a href={data?.meta?.data_url} target="_blank" rel="noopener">Zenodo · {data?.meta?.data_doi}</a></li>
-              <li><span className="action-key">Code</span>
-                  <a href="https://github.com/AbebeDChukalla/CropGBWater" target="_blank" rel="noopener">github.com/AbebeDChukalla/CropGBWater</a></li>
-            </ul>
-          </div>
-
-          <div className="feedback-note">
-            Privacy: submissions are handed to your local email app and not stored on this
-            site or sent through any third-party form service. Anti-spam: a honeypot field
-            blocks automated submissions.
-          </div>
-        </aside>
+      <div className="feedback-links-row">
+        <div className="feedback-card">
+          <h4>Where else to reach the project</h4>
+          <ul className="feedback-links">
+            <li><span className="action-key">Paper</span>
+                <a href={data?.meta?.paper_url} target="_blank" rel="noopener">{data?.meta?.paper_doi}</a></li>
+            <li><span className="action-key">Data</span>
+                <a href={data?.meta?.data_url} target="_blank" rel="noopener">Zenodo · {data?.meta?.data_doi}</a></li>
+            <li><span className="action-key">Code</span>
+                <a href="https://github.com/AbebeDChukalla/CropGBWater" target="_blank" rel="noopener">github.com/AbebeDChukalla/CropGBWater</a></li>
+          </ul>
+        </div>
       </div>
     </section>
   );
 }
 
-// Reveal + copy-to-clipboard for the contact email buttons
-function revealAndCopy(e) {
-  const b64 = e.currentTarget.getAttribute("data-email-b64") || "";
-  let addr = "";
-  try { addr = atob(b64); } catch (_) {}
-  if (!addr) return;
-  try {
-    navigator.clipboard.writeText(addr);
-    const orig = e.currentTarget.textContent;
-    e.currentTarget.textContent = "Copied ✓";
-    setTimeout(() => { e.currentTarget.textContent = orig; }, 1500);
-  } catch (_) {
-    // Fallback: open mailto if clipboard not available
-    window.location.href = `mailto:${addr}`;
-  }
-}
-
 // ─── Protected email link ────────────────────────────────────────────
-// Renders a single clickable mailto: link. The address is decoded from
-// base64 at render time so it isn't a plain readable string in the page
-// source; visitors can click it and their email client opens with the
-// recipient pre-filled.
+// The address is base64-encoded at rest and never appears as readable text
+// on the page until the user actively clicks. First click opens the user's
+// email client with the recipient pre-filled; the chip itself only shows
+// "Email" as its label. A small lock glyph signals the protection.
 function ProtectedEmailLink({ subject }) {
-  const to = decodeTo();
-  if (!to) return null;
-  const href = `mailto:${to}?subject=${encodeURIComponent(subject)}`;
-  // Render the visible text obfuscated character-by-character via JS, so
-  // simple email-address scrapers don't pick it up from raw HTML.
-  const visible = [...to].map((c, i) => <span key={i}>{c}</span>);
+  const [opened, setOpened] = React.useState(false);
+  const handleClick = (e) => {
+    const to = decodeTo();
+    if (!to) return;
+    e.preventDefault();
+    setOpened(true);
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}`;
+  };
   return (
     <p className="protected-email">
       <span className="protected-email-label">Email:</span>
       <a className="protected-email-link"
-         href={href}
+         href="#contact"
          rel="noopener"
-         aria-label="Open email client to message the atlas creator"
-         onClick={() => { /* mailto handled by browser */ }}>
-        {visible}
+         aria-label="Open your email client to message the atlas creator"
+         onClick={handleClick}>
+        <span className="protected-email-lock" aria-hidden="true">🔒</span>
+        {opened ? "Opening email client…" : "Click to open in your email client"}
       </a>
     </p>
   );
