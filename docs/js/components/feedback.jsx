@@ -22,7 +22,6 @@ function FeedbackPage({ data }) {
           collaboration, data inquiries, educational use, or partnership
           opportunities.
         </p>
-        <ProtectedEmailLink subject={EMAIL_SUBJECT} />
         <WantToHear />
       </div>
 
@@ -38,37 +37,15 @@ function FeedbackPage({ data }) {
                 <a href="https://github.com/AbebeDChukalla/CropGBWater" target="_blank" rel="noopener">github.com/AbebeDChukalla/CropGBWater</a></li>
           </ul>
         </div>
+
+        <p className="feedback-email-line">
+          For feedback Email:{" "}
+          <a href="mailto:abedeme@gmail.com?subject=CropGBWater%20%E2%80%93%20Feedback%20or%20Collaboration%20Request">
+            abedeme@gmail.com
+          </a>
+        </p>
       </div>
     </section>
-  );
-}
-
-// ─── Protected email link ────────────────────────────────────────────
-// The address is base64-encoded at rest and never appears as readable text
-// on the page until the user actively clicks. First click opens the user's
-// email client with the recipient pre-filled; the chip itself only shows
-// "Email" as its label. A small lock glyph signals the protection.
-function ProtectedEmailLink({ subject }) {
-  const [opened, setOpened] = React.useState(false);
-  const handleClick = (e) => {
-    const to = decodeTo();
-    if (!to) return;
-    e.preventDefault();
-    setOpened(true);
-    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}`;
-  };
-  return (
-    <p className="protected-email">
-      <span className="protected-email-label">Email:</span>
-      <a className="protected-email-link"
-         href="#contact"
-         rel="noopener"
-         aria-label="Open your email client to message the atlas creator"
-         onClick={handleClick}>
-        <span className="protected-email-lock" aria-hidden="true">🔒</span>
-        {opened ? "Opening email client…" : "Click to open in your email client"}
-      </a>
-    </p>
   );
 }
 
