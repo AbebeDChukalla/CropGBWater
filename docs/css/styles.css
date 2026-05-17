@@ -1404,6 +1404,269 @@ body[data-loading="0"] .boot { display: none; }
   overflow-wrap: anywhere;
 }
 
+/* ─── Feedback · protected email + WantToHear cards ──────────────── */
+.protected-email {
+  display: inline-flex; align-items: baseline; gap: 10px;
+  margin: 14px 0 4px;
+  padding: 10px 14px;
+  background: var(--paper2);
+  border: 0.5px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--font-mono); font-size: 13px;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  animation: rise .45s ease-out both;
+}
+.protected-email-label {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink40);
+}
+.protected-email-link {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.protected-email-link span { display: inline; }
+.protected-email-link:hover { color: var(--ink); }
+
+.wth { margin-top: clamp(20px, 3vh, 36px); }
+.wth-title {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(20px, 1.9vw, 26px); line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+}
+.wth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+.wth-card {
+  display: grid;
+  grid-template-columns: 40px 1fr 24px;
+  align-items: start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s, box-shadow .15s;
+  animation: rise .45s ease-out both;
+  min-width: 0;
+}
+.wth-card:hover {
+  background: var(--paper2);
+  border-color: var(--ink40);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(20,20,15,0.06);
+}
+.wth-card.on {
+  background: var(--paper2);
+  border-color: var(--ink70);
+}
+.wth-icon {
+  font-size: 22px; line-height: 1;
+  width: 38px; height: 38px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: color-mix(in oklab, var(--paper2) 60%, var(--paper));
+  border-radius: 50%;
+}
+.wth-card-body {
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 0;
+}
+.wth-card-title {
+  font-family: var(--font-display);
+  font-size: 16px; line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.wth-card-text {
+  font-family: var(--font-body);
+  font-size: 13px; line-height: 1.5;
+  color: var(--ink70);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 1.5em;
+  transition: max-height .25s ease-out, -webkit-line-clamp .25s;
+}
+.wth-card.on .wth-card-text {
+  display: block;
+  -webkit-line-clamp: unset;
+  max-height: 240px;
+}
+.wth-toggle {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--ink40);
+  align-self: center;
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 0.5px solid var(--line);
+  background: var(--paper);
+}
+.wth-card.on .wth-toggle { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ─── Trends · crop comparison block ───────────────────────────────── */
+.trend-block { margin-bottom: clamp(28px, 4vh, 56px); }
+.trend-block-crops {
+  margin-top: clamp(24px, 4vh, 48px);
+  padding-top: clamp(20px, 3vh, 36px);
+  border-top: 0.5px solid var(--line);
+}
+.trend-h {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(22px, 2.2vw, 30px); line-height: 1.18;
+  letter-spacing: -0.01em;
+  margin: 12px 0 10px;
+  text-wrap: balance;
+}
+.trend-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap;
+  margin: 8px 0 14px;
+}
+.trend-toolbar-2 {
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--line);
+}
+.trend-toolbar-label {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink40);
+}
+.trend-select {
+  appearance: none;
+  border: 0.5px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body); font-size: 13px;
+  padding: 6px 28px 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink70) 50%),
+                    linear-gradient(135deg, var(--ink70) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.trend-select:focus { outline: 2px solid var(--ink40); outline-offset: 2px; }
+
+.crop-chip-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin: 4px 0 14px;
+}
+.crop-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 999px;
+  border: 0.5px solid var(--line);
+  background: var(--paper);
+  color: var(--ink70);
+  font-family: var(--font-body); font-size: 12.5px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.crop-chip-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--c, var(--ink40));
+  flex: none;
+}
+.crop-chip:hover { border-color: var(--c); }
+.crop-chip.on {
+  background: var(--c);
+  color: var(--paper);
+  border-color: var(--c);
+}
+.crop-chip.on .crop-chip-dot {
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--c) inset;
+}
+
+.trend-frame-crops {
+  display: grid; grid-template-columns: 1.6fr minmax(220px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+.crop-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw-line 1.2s cubic-bezier(.22,.61,.36,1) both;
+}
+.crop-pt {
+  animation: pop-in .35s both;
+  animation-delay: 0.9s;
+}
+.crop-line-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  animation: fade-in .5s 1.1s both;
+}
+
+.trend-hover-panel {
+  background: var(--paper);
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  min-width: 0;
+}
+.trend-hover-title {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink40);
+}
+.trend-hover-year {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-transform: none;
+}
+.trend-hover-list { display: flex; flex-direction: column; gap: 4px; }
+.trend-hover-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 0.5px solid var(--line);
+}
+.trend-hover-row:last-child { border-bottom: 0; }
+.trend-hover-swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+}
+.trend-hover-name {
+  font-family: var(--font-body); font-size: 13px; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trend-hover-val {
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--ink70);
+  white-space: nowrap;
+}
+.trend-hover-hint {
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: var(--ink40); margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .trend-frame-crops { grid-template-columns: 1fr; gap: 14px; }
+}
+
 /* ─── Comparison · river-basin water stress ───────────────────────── */
 .basin-stress {
   margin-top: clamp(28px, 4vh, 56px);

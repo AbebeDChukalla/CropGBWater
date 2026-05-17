@@ -72,13 +72,15 @@ function FeedbackPage({ data }) {
           <span>Module 07 / Feedback · Collaboration</span>
         </div>
         <h2 className="module-title">
-          Reach the creator of the CropGBWater Atlas.
+          Reach the creators of the agricultural green- and blue water use Atlas.
         </h2>
         <p className="module-sub">
           We are looking forward to your feedback on the Atlas, scientific
           collaboration, data inquiries, educational use, or partnership
           opportunities.
         </p>
+        <ProtectedEmailLink subject={EMAIL_SUBJECT} />
+        <WantToHear />
       </div>
 
       <div className="feedback-grid">
@@ -161,18 +163,6 @@ function FeedbackPage({ data }) {
           </div>
 
           <div className="feedback-card">
-            <h4>What we&rsquo;d love to hear</h4>
-            <ul>
-              <li>What works, what doesn&rsquo;t, what&rsquo;s missing</li>
-              <li>Specific country / crop views you&rsquo;d want added</li>
-              <li>Discrepancies between the dashboard and your own analysis</li>
-              <li>Citation or attribution requests</li>
-              <li>Collaboration on extending the model to new years or crops</li>
-              <li>Educational use in courses or workshops</li>
-            </ul>
-          </div>
-
-          <div className="feedback-card">
             <h4>Where else to reach the project</h4>
             <ul className="feedback-links">
               <li><span className="action-key">Paper</span>
@@ -210,6 +200,76 @@ function revealAndCopy(e) {
     // Fallback: open mailto if clipboard not available
     window.location.href = `mailto:${addr}`;
   }
+}
+
+// ─── Protected email link ────────────────────────────────────────────
+// Renders a single clickable mailto: link. The address is decoded from
+// base64 at render time so it isn't a plain readable string in the page
+// source; visitors can click it and their email client opens with the
+// recipient pre-filled.
+function ProtectedEmailLink({ subject }) {
+  const to = decodeTo();
+  if (!to) return null;
+  const href = `mailto:${to}?subject=${encodeURIComponent(subject)}`;
+  // Render the visible text obfuscated character-by-character via JS, so
+  // simple email-address scrapers don't pick it up from raw HTML.
+  const visible = [...to].map((c, i) => <span key={i}>{c}</span>);
+  return (
+    <p className="protected-email">
+      <span className="protected-email-label">Email:</span>
+      <a className="protected-email-link"
+         href={href}
+         rel="noopener"
+         aria-label="Open email client to message the atlas creator"
+         onClick={() => { /* mailto handled by browser */ }}>
+        {visible}
+      </a>
+    </p>
+  );
+}
+
+// ─── "What we'd love to hear" — interactive expandable cards ────────
+const WTH_ITEMS = [
+  { icon: "👍", title: "What works, what doesn't, what's missing",
+    body: "Tell us where the Atlas serves your work well — and where it falls short. Concrete examples are gold." },
+  { icon: "🗺️", title: "Specific country or crop views you'd like added",
+    body: "If there's a country, region, crop or grouping you want to drill into that we don't yet surface, tell us which one and what story you'd want to tell." },
+  { icon: "🔍", title: "Discrepancies between the dashboard and your analysis",
+    body: "If a number you see here doesn't match your own dataset or paper, we want to know. Send the values + the source." },
+  { icon: "📚", title: "Citation or attribution requests",
+    body: "Using the Atlas in a publication, course, or report? Happy to help with the right wording, version, and DOI." },
+  { icon: "🤝", title: "Collaboration on extending the model",
+    body: "New years, new crops, new spatial units, regional deep-dives — open to working together on extensions." },
+  { icon: "🎓", title: "Educational use in courses or workshops",
+    body: "Using the Atlas to teach water-food-system interactions? Tell us the context and we'll help with material." },
+];
+
+function WantToHear() {
+  const [open, setOpen] = React.useState(null);
+  return (
+    <div className="wth">
+      <h3 className="wth-title">What we&rsquo;d love to hear</h3>
+      <div className="wth-grid">
+        {WTH_ITEMS.map((it, i) => {
+          const isOpen = open === i;
+          return (
+            <button key={i}
+                    className={`wth-card ${isOpen ? "on" : ""}`}
+                    style={{ animationDelay: `${i * 50}ms` }}
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    aria-expanded={isOpen}>
+              <span className="wth-icon" aria-hidden="true">{it.icon}</span>
+              <span className="wth-card-body">
+                <span className="wth-card-title">{it.title}</span>
+                <span className="wth-card-text">{it.body}</span>
+              </span>
+              <span className="wth-toggle" aria-hidden="true">{isOpen ? "−" : "+"}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 window.FeedbackPage = FeedbackPage;
