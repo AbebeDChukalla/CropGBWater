@@ -2,6 +2,13 @@
  * tab-paged, animated. */
 
 :root {
+  /* Match the <meta name="color-scheme"> opt-out: tell every UA we render
+     in a light theme and do not want auto-dark transforms (Chrome Android
+     Auto Dark, LinkedIn / Facebook in-app browser inversion, etc.).
+     The manual dark mode in the Tweaks panel uses data-dark="1" attribute
+     and is unaffected. */
+  color-scheme: light;
+
   --paper:  #f3efe6;
   --paper2: #ebe6d8;
   --ink:    #14140f;

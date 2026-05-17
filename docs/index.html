@@ -3,6 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tell mobile UAs (LinkedIn / Facebook in-app browsers, Chrome Android Auto
+       Dark Mode, Edge auto-contrast, etc.) that we render in a light theme and
+       do NOT want any auto-invert/darken transform. Without these tags, the
+       LinkedIn in-app browser was auto-darkening the cream/paper canvas on
+       mobile. The in-page Tweaks panel still lets users opt into dark mode
+       manually via the data-dark attribute. -->
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#f3efe6" />
+  <meta name="supported-color-schemes" content="light" />
   <title>CropGBWater · Atlas of agricultural green &amp; blue water use, 2000-2020</title>
   <meta name="description" content="Global atlas of green and blue crop water consumption across 46 crops at 0.083 degree resolution for 2000, 2010 and 2020. Total crop water use rose 9% from 2010 to 2020 — almost entirely from rainfall, not irrigation." />
 

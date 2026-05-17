@@ -42,16 +42,19 @@ mono_stack      = sp.mono_stack
 
 
 def draw_logo_block(d, im):
-    """Brand mark (globes + drop + plant) + CropGBWater wordmark + eyebrow."""
-    mark_size = 130
-    mark_w    = int(mark_size * 1.45)
-    mark_cx, mark_cy = 80 + mark_w // 2, 78
-    sp.draw_brand_mark(d, im, mark_cx, mark_cy, size=mark_size)
-    wordmark_x = mark_cx + mark_w // 2 + 22
-    g_center, b_center = sp.draw_logo(d, wordmark_x, 56)
-    sp.draw_logo_labels(d, g_center, b_center, label_y=40)
+    """Paste the actual cleaned logo PNG + eyebrow (matches the static PNG)."""
+    from PIL import Image
+    logo_path = HERE.parent / "Loggo_CropGBWater_clean.png"
+    if not logo_path.exists():
+        logo_path = HERE.parent / "Loggo_CropGBWater_final.PNG"
+    if logo_path.exists():
+        logo = Image.open(logo_path).convert("RGBA")
+        target_h = 110
+        scale = target_h / logo.height
+        logo = logo.resize((int(logo.width * scale), target_h), Image.LANCZOS)
+        im.alpha_composite(logo, (80, 28))
 
-    eyebrow_y = 124
+    eyebrow_y = 156
     d.line([(80, eyebrow_y + 12), (134, eyebrow_y + 12)], fill=INK70, width=2)
     d.text((146, eyebrow_y),
            "ATLAS OF AGRICULTURAL GREEN- AND BLUE WATER USE  ·  2026",
@@ -69,9 +72,10 @@ def draw_footer(d):
 
 
 def draw_step_dots(d, idx, n):
-    """5 progress dots at the very bottom right of the headline area."""
-    base_x = 80
-    base_y = 200
+    """5 progress dots — moved into the right-hand side of the eyebrow row
+    so they don't collide with the headline below."""
+    base_x = 1120 - n * 36 + 8
+    base_y = 168
     for i in range(n):
         on = (i == idx)
         d.rectangle((base_x + i * 36, base_y,
@@ -134,12 +138,11 @@ def render_frame(idx, *, summary, continents, groups, countries, change):
         s = f"{share:.0f}%"
         d.text((80, y), s, font=serif_xl, fill=GREEN)
         w = d.textlength(s, font=serif_xl)
-        d.text((80 + w + 18, y), "of all crop water —", font=serif_lg, fill=INK); y += 92
-        d.text((80, y), "more than ", font=serif_lg, fill=INK)
-        w = d.textlength("more than ", font=serif_lg)
-        d.text((80 + w, y), "everywhere", font=serif_xl, fill=BLUE)
-        w2 = d.textlength("everywhere", font=serif_xl)
-        d.text((80 + w + w2, y), " else combined.", font=serif_lg, fill=INK40); y += 78
+        d.text((80 + w + 18, y), "of all crop water,", font=serif_lg, fill=INK); y += 92
+        # Shorter third line so it always fits within the 1040 px text column
+        d.text((80, y), "more than the rest ", font=serif_lg, fill=INK)
+        w = d.textlength("more than the rest ", font=serif_lg)
+        d.text((80 + w, y), "combined.", font=serif_xl, fill=BLUE); y += 78
         d.text((80, y), f"≈ {kml:,} km³/yr in 2020.",
                font=mono_eyebrow, fill=INK70)
 
@@ -154,7 +157,7 @@ def render_frame(idx, *, summary, continents, groups, countries, change):
         d.text((80 + w + 18, y), "is rainfall —", font=serif_lg, fill=INK); y += 92
         d.text((80, y), "irrigation barely grew.", font=serif_xl, fill=INK40); y += 86
         d.text((80, y),
-               f"Green water consumption grew {change['green_pct']:.1f}%  ·  blue grew only {change['blue_pct']:.1f}%  ·  2010 → 2020",
+               f"Green grew {change['green_pct']:.1f}%  ·  blue grew only {change['blue_pct']:.1f}%  ·  2010 → 2020",
                font=mono_eyebrow, fill=INK70)
 
     elif idx == 3:
@@ -171,7 +174,7 @@ def render_frame(idx, *, summary, continents, groups, countries, change):
         w = d.textlength("Rice draws ", font=serif_lg)
         d.text((80 + w, y), "1,000+ km³/yr.", font=serif_xl, fill=BLUE); y += 78
         d.text((80, y),
-               "Wheat · Maize · Rice · Sorghum · Barley · Millets — together ≈ half of global crop water.",
+               "Wheat · Maize · Rice · Sorghum · Barley — together ≈ half of global crop water.",
                font=mono_eyebrow, fill=INK70)
 
     elif idx == 4:
@@ -190,7 +193,7 @@ def render_frame(idx, *, summary, continents, groups, countries, change):
         w = d.textlength("Each draws ", font=serif_lg)
         d.text((80 + w, y), "400–1,000 km³/yr.", font=serif_xl, fill=INK40); y += 78
         d.text((80, y),
-               f"172 countries modelled across 6 continents · click any country in the dashboard for details.",
+               "172 countries  ·  6 continents  ·  click any country for the full detail",
                font=mono_eyebrow, fill=INK70)
 
     return im
