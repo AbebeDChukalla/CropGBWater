@@ -1,16 +1,11 @@
 [![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452)
 
-<p align="center">
-  <a href="https://abebedchukalla.github.io/CropGBWater/" target="_blank">
-    <img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
-  </a>
-</p>
+<a href="https://abebedchukalla.github.io/CropGBWater/" target="_blank">
+  <img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
+</a>
 
-<p align="center">
-  <a href="https://abebedchukalla.github.io/CropGBWater/">
-    🌍 Open the CropGBWater Atlas
-  </a>
-</p>
+🌍 **Open the CropGBWater Atlas:**  
+https://abebedchukalla.github.io/CropGBWater/
 
 ## <font color='#ff009a'>GLOBAL GRIDDED MODEL OF CROPS' GREEN AND BLUE WATER USE AND WATER-LIMITED CROP YIELD</font>
 
