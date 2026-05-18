@@ -4,8 +4,7 @@
   <img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
 </a>
 
-🌍 **Open the CropGBWater Atlas:**  
-https://abebedchukalla.github.io/CropGBWater/
+🌍 **Open the CropGBWater Atlas:** https://abebedchukalla.github.io/CropGBWater/
 
 ## <font color='#ff009a'>GLOBAL GRIDDED MODEL OF CROPS' GREEN AND BLUE WATER USE AND WATER-LIMITED CROP YIELD</font>
 
