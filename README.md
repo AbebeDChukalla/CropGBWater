@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452)
 # CropGBWater
-! (docs/Loggo_CropGBWater_clean.png)
+<img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
 https://abebedchukalla.github.io/CropGBWater/
 ## <font color='#ff009a'> GLOBAL GRIDDED MODEL OF CROPS' GREEN and BLUE WATER USE AND WATER-LIMITED CROP YIELD </font> 
 ### Version 2.1
