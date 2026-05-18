@@ -1,8 +1,19 @@
 [![DOI](https://zenodo.org/badge/698937360.svg)](https://zenodo.org/doi/10.5281/zenodo.10914452)
-# CropGBWater
-<img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
-https://abebedchukalla.github.io/CropGBWater/
-## <font color='#ff009a'> GLOBAL GRIDDED MODEL OF CROPS' GREEN and BLUE WATER USE AND WATER-LIMITED CROP YIELD </font> 
+
+<p align="center">
+  <a href="https://abebedchukalla.github.io/CropGBWater/" target="_blank">
+    <img src="https://raw.githubusercontent.com/AbebeDChukalla/CropGBWater/main/docs/Loggo_CropGBWater_clean.png" width="300">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://abebedchukalla.github.io/CropGBWater/">
+    🌍 Open the CropGBWater Atlas
+  </a>
+</p>
+
+## <font color='#ff009a'>GLOBAL GRIDDED MODEL OF CROPS' GREEN AND BLUE WATER USE AND WATER-LIMITED CROP YIELD</font>
+
 ### Version 2.1
 **Project**: ***Foresight Initiative: Global Gridded Crop Water Demand 2020 (G2CWD)***
 <br/>**Created in September 2023, updated in May 2026**
