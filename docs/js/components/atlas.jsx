@@ -18,20 +18,20 @@ function Atlas({ data, onSelectCountry }) {
     return m;
   }, [data]);
 
-  // For the current year+metric, derive value array + breaks.
+  // For the current year+metric, derive value array + breaks. The country
+  // bundle now ships a per-year mini-block (`c.years[year]`) for 2000 / 2010
+  // / 2020, so the choropleth no longer has to approximate older years.
   const valueFor = React.useCallback((c) => {
     if (!c) return null;
-    // We have full year-history only via country_detail. The summary table
-    // covers all 3 years for 2020 here — for 2000/2010 we'd need to load
-    // detail JSON on demand. We keep the lighter table for the choropleth.
-    if (year === 2020) {
-      if (metric === "green") return c.green_km3;
-      if (metric === "blue")  return c.blue_km3;
-      return c.total_km3;
+    const ys = c.years && c.years[String(year)];
+    if (ys) {
+      if (metric === "green") return ys.green_km3;
+      if (metric === "blue")  return ys.blue_km3;
+      return ys.total_km3;
     }
-    // For other years, fall back to trend-based estimate from 2020 + trend pct.
-    // (We could fetch per-country JSON, but that's 172 requests; for the
-    //  default choropleth we approximate.)
+    // Fallback (shouldn't normally trigger): use the top-level 2020 fields.
+    if (metric === "green") return c.green_km3;
+    if (metric === "blue")  return c.blue_km3;
     return c.total_km3;
   }, [year, metric]);
 
@@ -251,29 +251,36 @@ function Atlas({ data, onSelectCountry }) {
               </div>
             </div>
             <div className={`readout ${hover && hover.c ? "on" : ""}`}>
-              {hover && hover.c ? (
+              {hover && hover.c ? (() => {
+                const ys = hover.c.years && hover.c.years[String(year)];
+                const greenPct = (ys && ys.total_km3 > 0)
+                  ? Math.round(ys.green_km3 / ys.total_km3 * 100) : hover.c.green_pct;
+                const bluePct  = (ys && ys.total_km3 > 0)
+                  ? Math.round(ys.blue_km3  / ys.total_km3 * 100) : hover.c.blue_pct;
+                return (
                 <>
                   <span className="readout-name">{hover.c.name}</span>
                   <div className="readout-coord">
                     <span>{hover.c.iso3}</span>
                     <span>·</span>
-                    <span>2020</span>
+                    <span>{year}</span>
                   </div>
                   <div className="readout-val">
                     <span className="num">{CGBW.fmt.km3p(valueFor(hover.c))}</span>
                     <span className="readout-unit">km³/yr · {metricLabel.toLowerCase()}</span>
                   </div>
                   <div className="readout-split">
-                    <span><span className="dot dot-green" />{hover.c.green_pct}% green</span>
-                    <span><span className="dot dot-blue" />{hover.c.blue_pct}% blue</span>
+                    <span><span className="dot dot-green" />{greenPct}% green</span>
+                    <span><span className="dot dot-blue" />{bluePct}% blue</span>
                     {hover.c.trend_2010_2020_pct != null && (
                       <span style={{ color: "var(--accent)" }}>
-                        Δ {CGBW.fmt.pct(hover.c.trend_2010_2020_pct)}
+                        Δ 2010→2020: {CGBW.fmt.pct(hover.c.trend_2010_2020_pct)}
                       </span>
                     )}
                   </div>
                 </>
-              ) : (
+                );
+              })() : (
                 <>
                   <span className="readout-name" style={{ opacity: .5 }}>—</span>
                   <div className="readout-coord"><span>Hover a country to read its value</span></div>

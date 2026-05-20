@@ -317,15 +317,20 @@ def _spam_aggregate_year(year: int, name_to_iso: dict[str, str]) -> dict:
 
     def _read(path, tech_suffix):
         """Read one SPAM CSV and return a dict iso3 -> {SPAM_code: float}."""
-        # Construct the column list (only those that actually exist)
         if col_case == "upper":
             crop_cols = [f"{c}_{tech_suffix.upper()}" for c in spam_codes]
         else:
             crop_cols = [f"{c.lower()}_{tech_suffix.lower()}" for c in spam_codes]
-        # First peek at the header to subset to actually-present columns
-        head = pd.read_csv(path, nrows=0).columns.tolist()
-        usecols = [id_col] + [c for c in crop_cols if c in head]
-        df = pd.read_csv(path, usecols=usecols, low_memory=False)
+        # SPAM2010 CSVs use Windows-1252 encoding (non-UTF8 bytes appear in
+        # ADM names). Try utf-8 first, fall back to cp1252.
+        def _try(enc):
+            head = pd.read_csv(path, nrows=0, encoding=enc).columns.tolist()
+            cols = [id_col] + [c for c in crop_cols if c in head]
+            return pd.read_csv(path, usecols=cols, low_memory=False, encoding=enc), cols
+        try:
+            df, usecols = _try("utf-8")
+        except UnicodeDecodeError:
+            df, usecols = _try("cp1252")
         agg = df.groupby(id_col)[usecols[1:]].sum()
         # Drop the tech suffix to give plain SPAM crop code keys
         agg.columns = [c.split("_")[0].upper() for c in agg.columns]
@@ -670,6 +675,20 @@ def build_countries() -> dict:
     t20 = totals[2020].set_index("ISO3")["total_m3"]
     trend = ((t20 - t10) / t10 * 100).replace([float("inf"), -float("inf")], None)
 
+    # Per-year (green / blue / total) indexed by ISO3 so the choropleth can
+    # toggle between 2010 and 2020 (and 2000 if desired) without loading
+    # every per-country detail file.
+    years_idx: dict[int, dict] = {}
+    for yr in YEARS:
+        df_yr = totals[yr].set_index("ISO3")
+        years_idx[yr] = {
+            iso: {
+                "green_km3": _round((df_yr.at[iso, "green_m3"] or 0) / 1e9, 2),
+                "blue_km3":  _round((df_yr.at[iso, "blue_m3"]  or 0) / 1e9, 2),
+                "total_km3": _round((df_yr.at[iso, "total_m3"] or 0) / 1e9, 2),
+            } for iso in df_yr.index if isinstance(iso, str)
+        }
+
     out_rows = []
     for _, row in master.iterrows():
         iso = row["ISO3"]
@@ -678,6 +697,11 @@ def build_countries() -> dict:
         blue  = row["blue_m3"] or 0
         if total <= 0 or not isinstance(iso, str):
             continue
+        # Build a per-year mini-block for the choropleth (and the country sheet)
+        per_year = {}
+        for yr in YEARS:
+            v = years_idx.get(yr, {}).get(iso)
+            if v: per_year[str(yr)] = v
         rec = {
             "iso3": iso,
             "name": clean_country_name(row["Country"]),
@@ -688,6 +712,7 @@ def build_countries() -> dict:
             "green_pct": round(green / total * 100) if total else None,
             "blue_pct":  round(blue  / total * 100) if total else None,
             "trend_2010_2020_pct": _round(trend.get(iso), 1),
+            "years": per_year,
         }
         if area_tots is not None:
             a = area_tots[area_tots["ISO3"] == iso]
@@ -747,10 +772,25 @@ def _read_country_yield_2020() -> pd.DataFrame | None:
     return df
 
 
+def _read_country_yield_year(year: int) -> pd.DataFrame | None:
+    p = ROOT / "CountryCropsCSVs" / f"Y{year}_country_CropYield.csv"
+    if not p.exists(): return None
+    df = pd.read_csv(p, low_memory=False)
+    df = df.iloc[1:].reset_index(drop=True)
+    for col in df.columns:
+        if col not in ("ISO3", "Country"):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
+
+
 def build_country_detail(countries: dict) -> None:
     dfs: dict[int, pd.DataFrame] = {yr: _read_country_wf(yr) for yr in YEARS}
-    area_2020 = _read_country_area(2020)
-    yield_2020 = _read_country_yield_2020()
+    # Load area + yield tables for BOTH 2010 and 2020 so the country sheet can
+    # show the same crop detail for either year via a UI toggle.
+    area_by_year  = {y: _read_country_area(y)        for y in (2010, 2020)}
+    yield_by_year = {y: _read_country_yield_year(y)  for y in (2010, 2020)}
+    area_2020 = area_by_year[2020]
+    yield_2020 = yield_by_year[2020]
 
     crop_codes = sorted({c.split("_")[0] for c in dfs[2020].columns
                          if any(c.endswith(suf) for suf in
@@ -760,6 +800,9 @@ def build_country_detail(countries: dict) -> None:
     name_to_iso = _build_spam_name_to_iso3(countries)
     print("[SPAM] aggregating 2020 fallback ...")
     spam_2020 = _spam_aggregate_year(2020, name_to_iso)
+    print("[SPAM] aggregating 2010 fallback ...")
+    spam_2010 = _spam_aggregate_year(2010, name_to_iso) or {}
+    spam_by_year = {2010: spam_2010, 2020: spam_2020}
     print(f"       SPAM2020 coverage: {len(spam_2020)} countries with at least one crop record")
 
     # Country WF CSV uses full crop names (ArabicaCoffee) but SPAM lookup uses
@@ -793,58 +836,66 @@ def build_country_detail(countries: dict) -> None:
                 "total_km3": _round((g + b) / 1e9, 2),
             }
 
-        # Per-crop breakdown — water use + area + yield (RF and IRR) for 2020
-        df = dfs[2020]
-        row = df[df["ISO3"] == iso]
-        area_row  = (area_2020[area_2020["ISO3"]  == iso].iloc[0]
-                     if (area_2020 is not None and not area_2020[area_2020["ISO3"] == iso].empty) else None)
-        yield_row = (yield_2020[yield_2020["ISO3"] == iso].iloc[0]
-                     if (yield_2020 is not None and not yield_2020[yield_2020["ISO3"] == iso].empty) else None)
+        # Per-crop breakdown — water use + area + yield + WP (RF and IRR).
+        # Compute for both 2010 and 2020 so the country sheet can switch years.
+        def _build_crops_for_year(year: int):
+            df_yr = dfs[year]
+            row_yr = df_yr[df_yr["ISO3"] == iso]
+            if row_yr.empty:
+                return []
+            row_yr = row_yr.iloc[0]
+            area_df  = area_by_year.get(year)
+            yield_df = yield_by_year.get(year)
+            area_row  = (area_df[area_df["ISO3"]   == iso].iloc[0]
+                         if (area_df  is not None and not area_df[area_df["ISO3"]   == iso].empty) else None)
+            yield_row = (yield_df[yield_df["ISO3"] == iso].iloc[0]
+                         if (yield_df is not None and not yield_df[yield_df["ISO3"] == iso].empty) else None)
+            spam_year = spam_by_year.get(year, {})
 
-        crops = []
-        if not row.empty:
-            row = row.iloc[0]
+            out_crops = []
             for code in crop_codes:
-                gn_rf  = pd.to_numeric(row.get(f"{code}_RF_WFgn_m3_yr"),  errors="coerce")
-                gn_irr = pd.to_numeric(row.get(f"{code}_IRR_WFgn_m3_yr"), errors="coerce")
-                bl     = pd.to_numeric(row.get(f"{code}_IRR_WFbl_m3_yr"), errors="coerce")
+                gn_rf  = pd.to_numeric(row_yr.get(f"{code}_RF_WFgn_m3_yr"),  errors="coerce")
+                gn_irr = pd.to_numeric(row_yr.get(f"{code}_IRR_WFgn_m3_yr"), errors="coerce")
+                bl     = pd.to_numeric(row_yr.get(f"{code}_IRR_WFbl_m3_yr"), errors="coerce")
                 g = (gn_rf if not pd.isna(gn_rf) else 0) + (gn_irr if not pd.isna(gn_irr) else 0)
                 b = bl if not pd.isna(bl) else 0
                 tot = g + b
                 if tot <= 0:
                     continue
 
-                # Area (rainfed + irrigated, ha → Mha) — original country CSV
                 area_rf = area_irr = None
                 if area_row is not None:
                     a_rf  = _safe(area_row.get(f"{code}_RFarea_ha"))
                     a_irr = _safe(area_row.get(f"{code}_IRRarea_ha"))
                     area_rf  = _round((a_rf  or 0) / 1e6, 3) if a_rf  is not None else None
                     area_irr = _round((a_irr or 0) / 1e6, 3) if a_irr is not None else None
-                # Yield (t/ha) under rainfed + irrigated — original country CSV
                 yld_rf = yld_irr = None
                 if yield_row is not None:
                     yld_rf  = _round(_safe(yield_row.get(f"{code}_Yield_RF_ton_ha")),  2)
                     yld_irr = _round(_safe(yield_row.get(f"{code}_Yield_IRR_ton_ha")), 2)
 
-                # SPAM IFPRI fallback for any field still missing or zero.
-                # Country WF columns use the full crop name; SPAM lookup uses
-                # the 4-letter shorthand (ACOF, RICE, WHEA, ...).
                 short_code = fullname_to_short.get(code, code)
-                spam_rec = spam_2020.get(iso, {}).get(short_code, {})
+                spam_rec = spam_year.get(iso, {}).get(short_code, {})
                 spam_used: list[str] = []
                 if (area_rf in (None, 0)) and spam_rec.get("area_rf_ha"):
-                    area_rf = _round(spam_rec["area_rf_ha"] / 1e6, 3)
-                    spam_used.append("area_rf")
+                    area_rf = _round(spam_rec["area_rf_ha"] / 1e6, 3); spam_used.append("area_rf")
                 if (area_irr in (None, 0)) and spam_rec.get("area_irr_ha"):
-                    area_irr = _round(spam_rec["area_irr_ha"] / 1e6, 3)
-                    spam_used.append("area_irr")
+                    area_irr = _round(spam_rec["area_irr_ha"] / 1e6, 3); spam_used.append("area_irr")
                 if (yld_rf in (None, 0)) and spam_rec.get("yield_rf_ton_ha"):
-                    yld_rf = spam_rec["yield_rf_ton_ha"]
-                    spam_used.append("yield_rf")
+                    yld_rf = spam_rec["yield_rf_ton_ha"]; spam_used.append("yield_rf")
                 if (yld_irr in (None, 0)) and spam_rec.get("yield_irr_ton_ha"):
-                    yld_irr = spam_rec["yield_irr_ton_ha"]
-                    spam_used.append("yield_irr")
+                    yld_irr = spam_rec["yield_irr_ton_ha"]; spam_used.append("yield_irr")
+
+                def _wp(area_Mha, yld, water_m3):
+                    if area_Mha and yld and water_m3 and water_m3 > 0:
+                        return _round((area_Mha * yld * 1e9) / water_m3, 3)
+                    return None
+                wp_rf  = _wp(area_rf,  yld_rf,  gn_rf  if not pd.isna(gn_rf)  else 0)
+                wp_irr = _wp(area_irr, yld_irr, ((gn_irr if not pd.isna(gn_irr) else 0)
+                                                  + (bl    if not pd.isna(bl)    else 0)))
+                prod_rf_kg  = (area_rf  or 0) * (yld_rf  or 0) * 1e9
+                prod_irr_kg = (area_irr or 0) * (yld_irr or 0) * 1e9
+                wp_tot = _round((prod_rf_kg + prod_irr_kg) / tot, 3) if tot > 0 and (prod_rf_kg + prod_irr_kg) > 0 else None
 
                 rec = {
                     "code": code,
@@ -858,13 +909,27 @@ def build_country_detail(countries: dict) -> None:
                     "area_total_Mha":     _round((area_rf or 0) + (area_irr or 0), 3),
                     "yield_rainfed_ton_ha":   yld_rf,
                     "yield_irrigated_ton_ha": yld_irr,
+                    "wp_rainfed_kg_m3":   wp_rf,
+                    "wp_irrigated_kg_m3": wp_irr,
+                    "wp_total_kg_m3":     wp_tot,
                 }
                 if spam_used:
-                    rec["source"] = "spam2020"
+                    rec["source"] = f"spam{year}"
                     rec["source_fields"] = spam_used
-                crops.append(rec)
-            crops.sort(key=lambda r: r["total_km3"] or 0, reverse=True)
-        detail["crops"] = crops[:30]
+                out_crops.append(rec)
+            out_crops.sort(key=lambda r: r["total_km3"] or 0, reverse=True)
+            return out_crops[:30]
+
+        # Build both years, store under year-keyed map
+        detail["crops_by_year"] = {
+            "2010": _build_crops_for_year(2010),
+            "2020": _build_crops_for_year(2020),
+        }
+        # Keep `crops` as 2020 for backwards compatibility (old code may use it)
+        detail["crops"] = detail["crops_by_year"]["2020"]
+
+        # (Per-crop loop refactored into _build_crops_for_year above; both
+        # 2010 and 2020 are stored in detail["crops_by_year"].)
 
         with (OUT / "country_detail" / f"{iso}.json").open("w", encoding="utf-8") as f:
             json.dump(detail, f, separators=(",", ":"))

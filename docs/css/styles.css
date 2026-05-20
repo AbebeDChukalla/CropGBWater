@@ -901,8 +901,8 @@ body[data-loading="0"] .boot { display: none; }
 .cs-crop-list { display: flex; flex-direction: column; gap: 6px; }
 .cs-crop-head {
   display: grid;
-  grid-template-columns: minmax(74px, .85fr) minmax(0, 2.1fr) minmax(82px, .85fr) minmax(82px, .85fr);
-  gap: 10px; align-items: end;
+  grid-template-columns: minmax(70px, .8fr) minmax(0, 1.8fr) minmax(78px, .75fr) minmax(78px, .75fr) minmax(108px, 1fr);
+  gap: 8px; align-items: end;
   padding: 0 0 6px;
   border-bottom: 0.5px solid var(--line);
   font-family: var(--font-mono); font-size: 9.5px;
@@ -911,8 +911,8 @@ body[data-loading="0"] .boot { display: none; }
 }
 .cs-crop-row {
   display: grid;
-  grid-template-columns: minmax(74px, .85fr) minmax(0, 2.1fr) minmax(82px, .85fr) minmax(82px, .85fr);
-  gap: 10px; align-items: center;
+  grid-template-columns: minmax(70px, .8fr) minmax(0, 1.8fr) minmax(78px, .75fr) minmax(78px, .75fr) minmax(108px, 1fr);
+  gap: 8px; align-items: center;
   padding: 4px 0; border-bottom: 0.5px solid var(--line);
 }
 .cs-crop-name { font-family: var(--font-display); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -921,6 +921,108 @@ body[data-loading="0"] .boot { display: none; }
 .cs-crop-bar i { display: block; height: 100%; }
 .cs-crop-water-val { font-family: var(--font-mono); font-size: 11px; color: var(--ink70); white-space: nowrap; }
 .cs-crop-val { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink70); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ─ Country sheet · year toggle ── */
+.cs-year-toggle {
+  display: inline-flex;
+  border: 0.5px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  background: var(--paper2);
+  margin-bottom: 12px;
+}
+.cs-year-toggle button {
+  appearance: none; border: 0; background: transparent;
+  color: var(--ink70);
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 5px 14px;
+  border-radius: 999px; cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.cs-year-toggle button.on {
+  background: var(--ink); color: var(--paper); font-weight: 500;
+}
+
+/* ─ Country sheet · metric tabs ── */
+.cs-metric-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+.cs-metric-tabs button {
+  appearance: none; border: 0.5px solid var(--line);
+  background: var(--paper);
+  color: var(--ink70);
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.cs-metric-tabs button:hover { border-color: var(--ink40); }
+.cs-metric-tabs button.on {
+  background: var(--ink); color: var(--paper); border-color: var(--ink);
+}
+.cs-metric-tab-label {
+  font-family: var(--font-display); font-size: 15px; line-height: 1;
+  letter-spacing: -0.01em;
+}
+.cs-metric-tab-unit {
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.04em; opacity: 0.78;
+}
+
+/* ─ Country sheet · per-crop cards ── */
+.cs-detail { display: flex; flex-direction: column; gap: 6px; }
+.cs-crop-cards { display: flex; flex-direction: column; gap: 6px; }
+.cs-crop-card {
+  padding: 10px 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  display: flex; flex-direction: column; gap: 5px;
+  animation: rise .35s ease-out both;
+}
+.cs-crop-card:hover { border-color: var(--ink40); }
+.cs-crop-card-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px;
+}
+.cs-crop-card-name {
+  font-family: var(--font-display); font-size: 16px; line-height: 1.1;
+  letter-spacing: -0.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cs-crop-card-primary {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink); font-weight: 500;
+  white-space: nowrap;
+}
+.cs-crop-card-bar {
+  width: 100%; height: 5px;
+  background: var(--paper2);
+  border-radius: 2px; overflow: hidden;
+}
+.cs-crop-card-bar i {
+  display: block; height: 100%;
+  animation: grow-x .45s ease-out both; transform-origin: left;
+}
+.cs-crop-card-sub {
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: var(--ink70);
+  display: flex; flex-wrap: wrap; gap: 2px;
+}
+.cs-no-data {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink40);
+  padding: 16px;
+  text-align: center;
+  border: 0.5px dashed var(--line);
+  border-radius: 6px;
+}
+
 .cs-crop-legend {
   display: flex; gap: 14px; flex-wrap: wrap;
   font-family: var(--font-mono); font-size: 10.5px;

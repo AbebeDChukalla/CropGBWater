@@ -174,9 +174,14 @@ window.MethodFooter = MethodFooter;
 // ─── Country detail sheet ────────────────────────────────────────────
 function CountrySheet({ iso, onClose }) {
   const [detail, setDetail] = React.useState(null);
+  const [year, setYear] = React.useState("2020");        // 2010 ↔ 2020 toggle
+  const [metric, setMetric] = React.useState("water");   // water | area | yield | wp
+
   React.useEffect(() => {
     if (!iso) return;
     setDetail(null);
+    setYear("2020");
+    setMetric("water");
     CGBW.loadCountry(iso).then(setDetail).catch((e) => console.warn(e));
   }, [iso]);
 
@@ -187,6 +192,16 @@ function CountrySheet({ iso, onClose }) {
   }, [onClose]);
 
   if (!iso) return null;
+
+  // Year-specific country totals (for the KPI strip)
+  const yearTotal = detail && detail.years && detail.years[year] ? detail.years[year] : null;
+  const yt = yearTotal || {};
+  const ytGreenPct = (yt.total_km3 || 0) > 0 ? Math.round((yt.green_km3 || 0) / yt.total_km3 * 100) : 0;
+  const ytBluePct  = (yt.total_km3 || 0) > 0 ? Math.round((yt.blue_km3  || 0) / yt.total_km3 * 100) : 0;
+
+  // Year-specific per-crop list
+  const cropsForYear = (detail && detail.crops_by_year && detail.crops_by_year[year])
+    || (detail && detail.crops) || [];
 
   return (
     <div className="country-sheet" onClick={onClose}>
@@ -199,28 +214,41 @@ function CountrySheet({ iso, onClose }) {
         ) : (
           <>
             <div className="cs-head">
-              <span className="cs-eyebrow">Country detail · 2020</span>
+              <span className="cs-eyebrow">Country detail · {year}</span>
               <h3 className="cs-name">{detail.name}</h3>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--ink40)" }}>
                 {detail.iso3} · {detail.continent || "—"}
               </span>
             </div>
 
+            {/* Year toggle — drives the whole sheet */}
+            <div className="cs-year-toggle" role="tablist" aria-label="Select year">
+              {["2010", "2020"].map((y) => (
+                <button key={y}
+                        role="tab"
+                        aria-selected={year === y}
+                        className={year === y ? "on" : ""}
+                        onClick={() => setYear(y)}>
+                  {y}
+                </button>
+              ))}
+            </div>
+
             <div className="cs-row">
               <div className="cs-cell">
                 <span className="cs-cell-label">Total water use</span>
-                <span className="cs-cell-val"><span className="num">{CGBW.fmt.km3p(detail.total_km3)}</span><i>km³</i></span>
+                <span className="cs-cell-val"><span className="num">{CGBW.fmt.km3p(yt.total_km3)}</span><i>km³</i></span>
               </div>
               <div className="cs-cell">
                 <span className="cs-cell-label">Green water use</span>
                 <span className="cs-cell-val" style={{ color: "var(--green)" }}>
-                  <span className="num">{CGBW.fmt.km3p(detail.green_km3)}</span><i>km³ · {detail.green_pct}%</i>
+                  <span className="num">{CGBW.fmt.km3p(yt.green_km3)}</span><i>km³ · {ytGreenPct}%</i>
                 </span>
               </div>
               <div className="cs-cell">
                 <span className="cs-cell-label">Blue water use</span>
                 <span className="cs-cell-val" style={{ color: "var(--blue)" }}>
-                  <span className="num">{CGBW.fmt.km3p(detail.blue_km3)}</span><i>km³ · {detail.blue_pct}%</i>
+                  <span className="num">{CGBW.fmt.km3p(yt.blue_km3)}</span><i>km³ · {ytBluePct}%</i>
                 </span>
               </div>
             </div>
@@ -267,68 +295,133 @@ function CountrySheet({ iso, onClose }) {
               )}
             </div>
 
-            <div>
-              <div className="cs-section-label">
-                Top crops · 2020 · water (km³ · green/blue %) · area RF/IRR (Mha) · yield RF/IRR (t/ha)
-              </div>
-              <div className="cs-crop-list">
-                <div className="cs-crop-head">
-                  <span>Crop</span>
-                  <span>Water · % green / blue</span>
-                  <span>Area RF / IRR</span>
-                  <span>Yield RF / IRR</span>
-                </div>
-                {detail.crops.slice(0, 14).map((c) => {
-                  const max = detail.crops[0].total_km3 || 1;
-                  const hasArea  = (c.area_rainfed_Mha  ?? 0) > 0 || (c.area_irrigated_Mha  ?? 0) > 0;
-                  const hasYield = c.yield_rainfed_ton_ha != null || c.yield_irrigated_ton_ha != null;
-                  return (
-                    <div key={c.code} className="cs-crop-row">
-                      <span className="cs-crop-name" title={c.code}>{c.code}</span>
-                      <div className="cs-crop-water">
-                        <div className="cs-crop-bar" style={{ width: `${(c.total_km3 / max) * 100}%` }}>
-                          <i className="seg-green" style={{ flexBasis: `${c.green_pct}%` }} />
-                          <i className="seg-blue"  style={{ flexBasis: `${c.blue_pct }%` }} />
-                        </div>
-                        <span className="cs-crop-water-val">
-                          {CGBW.fmt.km3p(c.total_km3)}
-                          <span className="cs-crop-water-pct">
-                            <span style={{ color: "var(--green)" }}> · {c.green_pct}%g</span>
-                            <span style={{ color: "var(--blue)"  }}>/{c.blue_pct}%b</span>
-                          </span>
-                        </span>
-                      </div>
-                      <span className="cs-crop-val" data-empty={!hasArea ? "1" : "0"}>
-                        {hasArea ? (
-                          <>
-                            <span style={{ color: "var(--green)" }}>{c.area_rainfed_Mha   != null ? c.area_rainfed_Mha.toFixed(2)   : "—"}</span>
-                            <span style={{ color: "var(--ink40)" }}> / </span>
-                            <span style={{ color: "var(--blue)"  }}>{c.area_irrigated_Mha != null ? c.area_irrigated_Mha.toFixed(2) : "—"}</span>
-                          </>
-                        ) : <span style={{ color: "var(--ink40)" }}>n/d</span>}
-                      </span>
-                      <span className="cs-crop-val" data-empty={!hasYield ? "1" : "0"}>
-                        {hasYield ? (
-                          <>
-                            <span style={{ color: "var(--green)" }}>{c.yield_rainfed_ton_ha   != null ? c.yield_rainfed_ton_ha.toFixed(2)   : "—"}</span>
-                            <span style={{ color: "var(--ink40)" }}> / </span>
-                            <span style={{ color: "var(--blue)"  }}>{c.yield_irrigated_ton_ha != null ? c.yield_irrigated_ton_ha.toFixed(2) : "—"}</span>
-                          </>
-                        ) : <span style={{ color: "var(--ink40)" }}>n/d</span>}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="cs-crop-legend">
-                <span><i className="dot dot-green" /> rainfed</span>
-                <span><i className="dot dot-blue"  /> irrigated</span>
-                <span>n/d = not reported in source</span>
-              </div>
-            </div>
-          </>
+            <CropDetailPanel crops={cropsForYear} year={year} metric={metric} setMetric={setMetric} />
+            </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Per-crop detail panel ───────────────────────────────────────────
+// Shows a metric-tab strip (Water · Area · Yield · WP) and a clean
+// per-crop list for one metric at a time, driven by the selected year.
+function CropDetailPanel({ crops, year, metric, setMetric }) {
+  const METRICS = [
+    { id: "water", label: "Water",  unit: "km³/yr",  hint: "% green vs blue" },
+    { id: "area",  label: "Area",   unit: "Mha",     hint: "rainfed vs irrigated" },
+    { id: "yield", label: "Yield",  unit: "t/ha",    hint: "rainfed vs irrigated" },
+    { id: "wp",    label: "WP",     unit: "kg/m³",   hint: "total · rainfed / irrigated" },
+  ];
+  const max = crops.length > 0 ? (crops[0].total_km3 || 1) : 1;
+
+  return (
+    <div className="cs-detail">
+      <div className="cs-section-label">
+        Top crops · {year} — pick a metric below
+      </div>
+
+      <div className="cs-metric-tabs" role="tablist" aria-label="Metric">
+        {METRICS.map((m) => (
+          <button key={m.id}
+                  role="tab"
+                  aria-selected={metric === m.id}
+                  className={metric === m.id ? "on" : ""}
+                  onClick={() => setMetric(m.id)}>
+            <span className="cs-metric-tab-label">{m.label}</span>
+            <span className="cs-metric-tab-unit">{m.unit}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="cs-crop-cards">
+        {crops.slice(0, 14).map((c) => (
+          <CropMetricRow key={c.code} c={c} metric={metric} max={max} />
+        ))}
+        {crops.length === 0 && (
+          <div className="cs-no-data">No crop records for {year}.</div>
+        )}
+      </div>
+
+      <div className="cs-crop-legend">
+        <span><i className="dot dot-green" /> rainfed</span>
+        <span><i className="dot dot-blue"  /> irrigated</span>
+        <span>n/d = not reported in source</span>
+      </div>
+    </div>
+  );
+}
+
+function CropMetricRow({ c, metric, max }) {
+  // Pull values per metric
+  let bar = 0, primary = "", subParts = null;
+  if (metric === "water") {
+    bar = (c.total_km3 / max) * 100;
+    primary = CGBW.fmt.km3p(c.total_km3) + " km³";
+    subParts = (
+      <>
+        <span style={{ color: "var(--green)" }}>{c.green_pct}% green</span>
+        <span style={{ color: "var(--ink40)" }}> · </span>
+        <span style={{ color: "var(--blue)" }}>{c.blue_pct}% blue</span>
+      </>
+    );
+  } else if (metric === "area") {
+    const rf  = c.area_rainfed_Mha,   ir = c.area_irrigated_Mha;
+    const tot = (rf || 0) + (ir || 0);
+    bar = max > 0 ? (tot / max) * 50 : 0;     // independent scale, capped at 50%
+    primary = (rf != null || ir != null) ? (tot.toFixed(2) + " Mha") : "n/d";
+    subParts = (rf != null || ir != null) ? (
+      <>
+        <span style={{ color: "var(--green)" }}>{rf != null ? rf.toFixed(2) : "—"} rf</span>
+        <span style={{ color: "var(--ink40)" }}> · </span>
+        <span style={{ color: "var(--blue)" }}>{ir != null ? ir.toFixed(2) : "—"} irr</span>
+      </>
+    ) : null;
+  } else if (metric === "yield") {
+    const rf = c.yield_rainfed_ton_ha, ir = c.yield_irrigated_ton_ha;
+    primary = (rf != null && ir != null) ? `${rf.toFixed(2)} / ${ir.toFixed(2)} t/ha`
+            : (rf != null ? `${rf.toFixed(2)} rf · — irr` : (ir != null ? `— rf · ${ir.toFixed(2)} irr` : "n/d"));
+    subParts = (rf != null || ir != null) ? (
+      <>
+        <span style={{ color: "var(--green)" }}>{rf != null ? rf.toFixed(2) : "—"} rainfed</span>
+        <span style={{ color: "var(--ink40)" }}> · </span>
+        <span style={{ color: "var(--blue)" }}>{ir != null ? ir.toFixed(2) : "—"} irrigated</span>
+      </>
+    ) : null;
+    // bar uses max yield among top crops as scale
+    bar = (rf || ir) ? ((Math.max(rf || 0, ir || 0)) / 15) * 100 : 0;  // assume top yield ~15 t/ha
+  } else { // wp
+    const t = c.wp_total_kg_m3, rf = c.wp_rainfed_kg_m3, ir = c.wp_irrigated_kg_m3;
+    primary = t != null ? `${t.toFixed(2)} kg/m³` : "n/d";
+    subParts = (rf != null || ir != null) ? (
+      <>
+        <span style={{ color: "var(--green)" }}>{rf != null ? rf.toFixed(2) : "—"} rainfed</span>
+        <span style={{ color: "var(--ink40)" }}> · </span>
+        <span style={{ color: "var(--blue)" }}>{ir != null ? ir.toFixed(2) : "—"} irrigated</span>
+      </>
+    ) : null;
+    bar = t != null ? Math.min(100, (t / 6) * 100) : 0;   // scale 0-6 kg/m³
+  }
+
+  return (
+    <div className="cs-crop-card">
+      <div className="cs-crop-card-head">
+        <span className="cs-crop-card-name" title={c.code}>{c.code}</span>
+        <span className="cs-crop-card-primary">{primary}</span>
+      </div>
+      {bar > 0 && (
+        <div className="cs-crop-card-bar">
+          <i style={{ width: `${Math.max(2, bar)}%`,
+                      background: metric === "water"
+                        ? "var(--ink)"
+                        : metric === "area" ? "var(--ink40)"
+                        : metric === "yield" ? "var(--greenSoft)"
+                        : "var(--accent)" }} />
+        </div>
+      )}
+      {subParts && (
+        <div className="cs-crop-card-sub">{subParts}</div>
+      )}
     </div>
   );
 }

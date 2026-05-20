@@ -47,13 +47,13 @@ function WhyItMatters() {
   const cards = [
     {
       icon: "🌧️",
-      title: "Green water = rainfall",
-      body: "The portion of soil moisture coming from rainfall and stored in the root zone. It feeds rainfed crops at no extraction cost from rivers or aquifers."
+      title: "Green water",
+      body: "The portion of soil moisture in the root zone — mainly fed by rainfall — that crops actually take up. It supports rainfed crops at no withdrawal cost from rivers or aquifers."
     },
     {
       icon: "💧",
-      title: "Blue water = irrigation",
-      body: "Surface water and groundwater withdrawn to irrigate crops. It's a limited, contested resource — measurable abstraction with hydrological consequences."
+      title: "Blue water",
+      body: "Surface water and groundwater consumptively used by crops — primarily through irrigation, with smaller contributions from sources such as capillary rise from shallow water tables."
     },
     {
       icon: "🍚",
