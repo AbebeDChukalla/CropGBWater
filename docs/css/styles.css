@@ -110,6 +110,8 @@ body[data-loading="0"] .boot { display: none; }
   grid-template-columns: auto 1fr auto;
   align-items: center; gap: 24px;
   padding: 0 var(--gut);
+  background: var(--paper);                                                  /* fallback for browsers without color-mix (Safari<16.2, Firefox<113) */
+  background: var(--paper);                                                  /* fallback for browsers without color-mix */
   background: color-mix(in oklab, var(--paper) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -1034,6 +1036,7 @@ body[data-loading="0"] .boot { display: none; }
   display: inline-block;
   margin-left: 6px;
   padding: 1px 5px;
+  background: var(--paper2);                                                 /* fallback for browsers without color-mix */
   background: color-mix(in oklab, var(--accent) 18%, var(--paper));
   color: var(--accent);
   border-radius: 3px;
@@ -1280,8 +1283,8 @@ body[data-loading="0"] .boot { display: none; }
   animation: rise .35s ease-out both;
 }
 .feedback-status strong { display: inline-block; margin-right: 4px; }
-.feedback-success { background: color-mix(in oklab, var(--green) 12%, var(--paper)); border: 0.5px solid var(--green); color: var(--green); }
-.feedback-error   { background: color-mix(in oklab, var(--accent) 12%, var(--paper)); border: 0.5px solid var(--accent); color: var(--accent); }
+.feedback-success { background: var(--paper2); background: color-mix(in oklab, var(--green) 12%, var(--paper)); border: 0.5px solid var(--green); color: var(--green); }
+.feedback-error   { background: var(--paper2); background: color-mix(in oklab, var(--accent) 12%, var(--paper)); border: 0.5px solid var(--accent); color: var(--accent); }
 .feedback-error a { color: var(--accent); text-decoration: underline; }
 
 .feedback-aside { display: flex; flex-direction: column; gap: 14px; }
@@ -1416,6 +1419,7 @@ body[data-loading="0"] .boot { display: none; }
   gap: 8px;
   margin-top: 18px;
   padding: 16px;
+  background: var(--paper2);                                                 /* fallback for browsers without color-mix */
   background: linear-gradient(180deg,
     color-mix(in oklab, var(--paper2) 60%, var(--paper)) 0%,
     var(--paper) 100%);
@@ -1612,6 +1616,7 @@ body[data-loading="0"] .boot { display: none; }
   font-size: 22px; line-height: 1;
   width: 38px; height: 38px;
   display: inline-flex; align-items: center; justify-content: center;
+  background: var(--paper2);                                                 /* fallback for browsers without color-mix */
   background: color-mix(in oklab, var(--paper2) 60%, var(--paper));
   border-radius: 50%;
 }
@@ -2307,7 +2312,7 @@ body[data-loading="0"] .boot { display: none; }
 
 .copilot-fab {
   position: fixed;
-  left: 22px;                                  /* bottom-LEFT to avoid the Tweaks button (which is bottom-right) */
+  left: 22px;                                  /* bottom-LEFT default to avoid the Tweaks button (which is bottom-right) */
   bottom: calc(var(--pagenav-h) + 18px);
   z-index: 80;
   width: 52px; height: 52px;
@@ -2318,9 +2323,23 @@ body[data-loading="0"] .boot { display: none; }
   box-shadow: 0 6px 24px -8px rgba(201, 136, 59, 0.6),
               0 2px 8px -2px rgba(20, 20, 15, 0.25);
   transition: transform .18s ease-out, box-shadow .18s;
+  cursor: grab;                                /* hint: this can be moved */
+  touch-action: none;                          /* drag with touch should NOT scroll the page */
+  -webkit-user-select: none; user-select: none;
 }
 .copilot-fab:hover { transform: translateY(-2px) scale(1.04); }
 .copilot-fab.is-open { background: var(--ink); }
+/* While dragging — bigger shadow, grabbing cursor, no transition flicker, no pulse */
+.copilot-fab.is-dragging {
+  cursor: grabbing;
+  transition: none;
+  transform: scale(1.06);
+  box-shadow: 0 14px 36px -10px rgba(201, 136, 59, 0.7),
+              0 4px 14px -4px rgba(20, 20, 15, 0.3);
+}
+.copilot-fab.is-dragging .copilot-fab-pulse { display: none; }
+/* When user has chosen a custom position, the JS sets inline left/top; reset CSS bottom */
+.copilot-fab.is-placed { bottom: auto; }
 .copilot-fab-pulse {
   position: absolute; inset: -4px;
   border-radius: 50%;

@@ -10,14 +10,50 @@
 //
 // The widget also exposes a small navigation callback so answers can deep-link.
 
+// localStorage key for persisted FAB position
+var COPILOT_POS_KEY = "cgbw-copilot-pos";
+
+// Read persisted position safely (handles SSR / disabled storage / corrupt JSON)
+function loadCopilotPos() {
+  try {
+    var s = window.localStorage.getItem(COPILOT_POS_KEY);
+    if (!s) return null;
+    var p = JSON.parse(s);
+    if (typeof p.x === "number" && typeof p.y === "number") return p;
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+// FAB size in CSS px — mirrors the CSS responsive breakpoint
+function fabSize() {
+  return window.matchMedia && window.matchMedia("(max-width: 720px)").matches ? 46 : 52;
+}
+
+// Clamp a (x,y) inside the visible viewport with an 8px margin
+function clampPos(p) {
+  var s = fabSize();
+  var maxX = (window.innerWidth || 0) - s - 8;
+  var maxY = (window.innerHeight || 0) - s - 8;
+  return {
+    x: Math.max(8, Math.min(maxX, p.x)),
+    y: Math.max(8, Math.min(maxY, p.y))
+  };
+}
+
 function Copilot({ onNavigate }) {
   const [doc, setDoc] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [thread, setThread] = React.useState([]);    // {role:'user'|'bot', text, action?}
   const [typing, setTyping] = React.useState(false);
+  // Custom position from drag — null = use default CSS anchor (bottom-left)
+  const [pos, setPos] = React.useState(loadCopilotPos);
+  const [dragging, setDragging] = React.useState(false);
   const threadEnd = React.useRef(null);
   const inputRef = React.useRef(null);
+  const fabRef = React.useRef(null);
+  const dragInfo = React.useRef(null);      // { startX, startY, originX, originY, pointerId }
+  const wasDragging = React.useRef(false);  // set during pointermove, read in click to suppress
 
   // ─── Load Q&A index ──────────────────────────────────────────────
   React.useEffect(() => {
@@ -46,6 +82,102 @@ function Copilot({ onNavigate }) {
   React.useEffect(() => {
     if (threadEnd.current) threadEnd.current.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [thread, typing]);
+
+  // ─── Persist position whenever it changes (after a drag) ─────────
+  React.useEffect(() => {
+    if (!pos) return;
+    try { window.localStorage.setItem(COPILOT_POS_KEY, JSON.stringify(pos)); }
+    catch (e) { /* storage full / disabled — silently ignore */ }
+  }, [pos]);
+
+  // ─── Re-clamp position on viewport resize / orientation change ───
+  React.useEffect(() => {
+    function onResize() {
+      setPos(function (p) { return p ? clampPos(p) : p; });
+    }
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return function () {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
+
+  // ─── Pointer handlers (drag) ────────────────────────────────────
+  // Pointer Events API is supported in Edge 12+, Chrome 55+, Firefox 59+,
+  // Safari 13+ — covers every browser the rest of the site supports.
+  function onFabPointerDown(e) {
+    if (!fabRef.current) return;
+    const r = fabRef.current.getBoundingClientRect();
+    dragInfo.current = {
+      startX: e.clientX, startY: e.clientY,
+      originX: r.left,  originY: r.top,
+      pointerId: e.pointerId,
+    };
+    wasDragging.current = false;
+    try { fabRef.current.setPointerCapture(e.pointerId); } catch (_) {}
+  }
+
+  function onFabPointerMove(e) {
+    const info = dragInfo.current;
+    if (!info || info.pointerId !== e.pointerId) return;
+    const dx = e.clientX - info.startX;
+    const dy = e.clientY - info.startY;
+    // 5 px dead-zone so a normal click doesn't trip the drag
+    if (!wasDragging.current && Math.hypot(dx, dy) < 5) return;
+    wasDragging.current = true;
+    if (!dragging) setDragging(true);
+    setPos(clampPos({ x: info.originX + dx, y: info.originY + dy }));
+  }
+
+  function onFabPointerUp(e) {
+    const info = dragInfo.current;
+    if (!info || info.pointerId !== e.pointerId) return;
+    try { fabRef.current.releasePointerCapture(e.pointerId); } catch (_) {}
+    dragInfo.current = null;
+    if (wasDragging.current) setDragging(false);
+    // wasDragging stays true so the synthetic click that fires next is suppressed.
+    // It's cleared in onFabClick.
+  }
+
+  function onFabClick(e) {
+    if (wasDragging.current) {
+      wasDragging.current = false;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    setOpen(function (v) { return !v; });
+  }
+
+  // ─── Compute panel style when FAB has been dragged ──────────────
+  // Panel opens toward whichever half of the viewport the FAB is in
+  // (i.e. into the larger empty area), so it doesn't get pushed off-screen.
+  function computePanelStyle() {
+    if (!pos) return null;
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    const sz = fabSize();
+    const gap = 12;
+    const style = {};
+    if (pos.x + sz / 2 < winW / 2) {
+      style.left  = pos.x + "px";
+      style.right = "auto";
+    } else {
+      style.right = (winW - pos.x - sz) + "px";
+      style.left  = "auto";
+    }
+    if (pos.y + sz / 2 > winH / 2) {
+      // FAB in lower half → open panel upward
+      style.bottom = (winH - pos.y + gap) + "px";
+      style.top    = "auto";
+    } else {
+      // FAB in upper half → open panel downward
+      style.top    = (pos.y + sz + gap) + "px";
+      style.bottom = "auto";
+    }
+    return style;
+  }
 
   // ─── Send user message ──────────────────────────────────────────
   function send(text) {
@@ -84,13 +216,25 @@ function Copilot({ onNavigate }) {
   }
 
   // ─── Render ─────────────────────────────────────────────────────
+  const fabStyle = pos
+    ? { left: pos.x + "px", top: pos.y + "px", right: "auto", bottom: "auto" }
+    : null;
+  const panelStyle = open ? computePanelStyle() : null;
+
   return (
     <>
       <button
-        className={`copilot-fab ${open ? "is-open" : ""}`}
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close assistant" : "Open assistant"}
-        aria-expanded={open}>
+        ref={fabRef}
+        className={"copilot-fab" + (open ? " is-open" : "") + (dragging ? " is-dragging" : "") + (pos ? " is-placed" : "")}
+        style={fabStyle}
+        onPointerDown={onFabPointerDown}
+        onPointerMove={onFabPointerMove}
+        onPointerUp={onFabPointerUp}
+        onPointerCancel={onFabPointerUp}
+        onClick={onFabClick}
+        aria-label={open ? "Close Copilot" : "Open Copilot (drag to reposition)"}
+        aria-expanded={open}
+        title="Click to open · Drag to move">
         {open ? (
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -98,19 +242,26 @@ function Copilot({ onNavigate }) {
         ) : (
           <CopilotIcon />
         )}
-        {!open && <span className="copilot-fab-pulse" aria-hidden="true" />}
+        {!open && !dragging && <span className="copilot-fab-pulse" aria-hidden="true" />}
       </button>
 
       <div className={`copilot-panel ${open ? "is-open" : ""}`}
+           style={panelStyle}
            role="dialog"
-           aria-label="CropGBWater Copilot">
+           aria-label="Copilot">
         <header className="copilot-head">
           <span className="copilot-head-mark"><CopilotIcon small /></span>
           <div className="copilot-head-text">
-            <span className="copilot-head-name">{doc ? doc.assistant_name : "CropGBWater Copilot"}</span>
+            <span className="copilot-head-name">{doc ? doc.assistant_name : "Copilot"}</span>
             <span className="copilot-head-meta"><span className="copilot-dot" /> demo · offline</span>
           </div>
-          <button className="copilot-head-btn" onClick={reset} title="New conversation" aria-label="Reset">↺</button>
+          {pos && (
+            <button className="copilot-head-btn"
+                    onClick={() => { setPos(null); try { window.localStorage.removeItem(COPILOT_POS_KEY); } catch(_){} }}
+                    title="Move back to default corner"
+                    aria-label="Reset position">⤴</button>
+          )}
+          <button className="copilot-head-btn" onClick={reset} title="New conversation" aria-label="Reset conversation">↺</button>
           <button className="copilot-head-btn" onClick={() => setOpen(false)} aria-label="Close">×</button>
         </header>
 
