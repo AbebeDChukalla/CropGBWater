@@ -8,11 +8,11 @@
   "suggested_prompts": [
     "Which countries use the most water for crops?",
     "Which countries rely most on irrigation?",
-    "Show trends for irrigated wheat",
+    "Tell me about cotton water use",
+    "How thirsty is sugarcane?",
     "Compare India and China",
+    "Which crops grew the most over 20 years?",
     "Which crops rely mostly on green water?",
-    "Where did blue water consumption increase the most?",
-    "What is green vs blue water?",
     "How accurate is this data?"
   ],
   "entries": [
@@ -163,6 +163,86 @@
       "keywords": ["accurate", "accuracy", "uncertainty", "caveat", "reliable", "trust", "limitations"],
       "q": "How accurate is this data?",
       "a": "The model is well-calibrated for the global pattern and decade-scale change. The **2010 → 2020** interval is the most trustworthy. The **2000** values are sparser — several crops (e.g. oil palm, tropical fruit, citrus) have known coverage gaps in 2000 and shouldn't be used for fine-grained year-on-year comparison. The Atlas page lists known anomalies under each crop.",
+      "navigates_to": "method",
+      "category": "meta"
+    },
+    {
+      "id": "crop-sugarcane",
+      "keywords": ["sugarcane", "sugar cane", "sugar crop", "sugarcane water"],
+      "q": "Tell me about sugarcane water use",
+      "a": "Sugarcane consumes **292 km³** of crop water per year (2020) — the fifth-largest crop footprint globally. It is heavily irrigation-dependent: **33% of its water comes from blue (irrigation) sources** (96 km³ blue · 197 km³ green). Total water use rose only +3.6% from 2010 to 2020, but **+23% over the full 2000–2020 period** — one of the five major crops the paper flags as fastest-growing.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "crop-cotton",
+      "keywords": ["cotton", "cotton water", "fibre", "fiber", "textile crop"],
+      "q": "How water-intensive is cotton?",
+      "a": "Cotton consumes **194 km³** of crop water per year (2020) — and has the **highest blue-water share of any major crop**: **36% from irrigation** (70 km³ blue · 124 km³ green). Cotton water use was essentially flat over the decade (199 → 194 km³, −2.8%) but its blue-water intensity makes it disproportionately exposed to irrigation-water stress in basins like the Indus and Aral.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "crop-soybean",
+      "keywords": ["soybean", "soy", "soya", "soybeans"],
+      "q": "Tell me about soybean water use",
+      "a": "Soybean consumes **521 km³** of crop water per year (2020) — the **fourth-largest** crop footprint and the largest oilseed by water use. It is almost entirely rainfed: **97% green water** (505 km³ green · only 16 km³ blue). Soybean water use grew **+18% from 2010 to 2020** and **+60% from 2000 to 2020** — almost the entire expansion came from rainfall, not irrigation.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "crop-oil-palm",
+      "keywords": ["oil palm", "oilpalm", "palm oil", "palm"],
+      "q": "Tell me about oil palm water use",
+      "a": "Oil palm consumes **303 km³** in 2020 — **essentially 100% green water** (only 0.3 km³ blue). The crop is tropical and rainfed by definition. ⚠ **Caveat:** the 2000 oil-palm value (638 km³) is almost certainly an upstream SPAM coverage/classification artefact, not a real decline. Use the **2010 → 2020** comparison (179 → 303 km³) for trend analysis instead of the full 20-year range.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "crop-maize",
+      "keywords": ["maize", "corn", "maize water"],
+      "q": "Tell me about maize water use",
+      "a": "Maize is the **second-largest crop by water consumption** — **860 km³** in 2020, behind only rice. It is mostly rainfed: **89% green water** (764 km³ green · 96 km³ blue). Maize was one of the decade's fastest growers: total water use rose **+22% from 2010 to 2020** and **+45% from 2000 to 2020**, driven primarily by expansion in the Americas and Africa.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "crop-cassava",
+      "keywords": ["cassava", "manioc", "yuca", "tuber"],
+      "q": "Tell me about cassava water use",
+      "a": "Cassava is the **decade's fastest-growing major crop by water use**: **+48% from 2010 to 2020** and **+82% from 2000 to 2020** (59 → 108 km³). It is **>99% rainfed** — only 0.2 km³ blue water out of 108 km³ total. The 82% growth over two decades is the upper bound of the paper's \"23–82% increase across five major crops\" finding.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "beverages-coffee-cocoa-tea",
+      "keywords": ["coffee", "cocoa", "tea", "beverage", "beverages", "chocolate"],
+      "q": "How much water do coffee, cocoa and tea use?",
+      "a": "Beverage crops together consume about **196 km³** per year (2020) — small compared to staples but **almost entirely rainfed**:\n- **Arabica coffee** — 61 km³ (>97% green)\n- **Robusta coffee** — 34 km³ (>98% green)\n- **Cocoa** — 59 km³ (>99% green)\n- **Tea** — 42 km³ (>98% green)\n\nThe \"water cost\" of your coffee or chocolate is real but comes overwhelmingly from rainfall, not irrigation.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "twenty-year-trends",
+      "keywords": ["20 year", "twenty year", "2000 to 2020", "20 years", "long term", "two decades", "82%", "23-82", "grew the most"],
+      "q": "Which crops grew the most over 20 years?",
+      "a": "The paper (Chukalla et al., *Nature Food* 2025) highlights that **five major crops increased their water consumption by 23–82% between 2000 and 2020**. From the atlas data, the biggest growers with a complete 20-year record are:\n- **Cassava** — +82% (59 → 108 km³)\n- **Soybean** — +60% (325 → 521 km³)\n- **Maize** — +45% (593 → 860 km³)\n- **Groundnut** — +27% (89 → 113 km³)\n- **Sugarcane** — +23% (238 → 292 km³)\n\nNote: this 20-year window excludes crops with incomplete 2000 baselines (oil palm, citrus, tropical fruit).",
+      "navigates_to": "trends",
+      "category": "trends"
+    },
+    {
+      "id": "blue-share-leaders",
+      "keywords": ["blue share", "most irrigated crop", "blue water share", "irrigation dependent crop", "highest blue", "most blue"],
+      "q": "Which crops are most irrigation-dependent?",
+      "a": "Ranked by **blue-water share of total water consumption** (2020):\n- **Cotton** — 36% blue (70 of 194 km³)\n- **Sugarcane** — 33% blue (96 of 292 km³)\n- **Rice** — 32% blue (328 of 1,035 km³)\n- **Wheat** — 28% blue (212 of 765 km³)\n- **Sugar beet** — 36% blue (small total: 6 of 16 km³)\n\nThese five crops are the most exposed to surface-water and groundwater stress globally.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "paper-summary",
+      "keywords": ["paper", "study", "research", "chukalla", "nature food", "summary of paper", "what does the paper say"],
+      "q": "What does the Chukalla 2025 paper say?",
+      "a": "The paper (Chukalla et al., *Nature Food* 2025, vol. 6) reports the first **spatially explicit, 5-arcminute (~10 km) atlas of crop water consumption** for 46 crops in 2020, with comparisons to 2010 (42 crops) and 2000 (20 crops).\n\n**Headline findings:**\n- Total 2020: **6,668 km³** — 5,588 green + 1,080 blue\n- Decadal increase 2010 → 2020: **+9%**\n- Five major crops grew **23–82%** over 20 years\n- Higher consumption is putting **additional pressure on limited water resources** alongside cropland expansion\n\nDOI: doi.org/10.1038/s43016-025-01231-x · Data: doi.org/10.5281/zenodo.17059989",
       "navigates_to": "method",
       "category": "meta"
     }
