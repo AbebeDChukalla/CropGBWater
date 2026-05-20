@@ -1,0 +1,115 @@
+{
+  "_note": "Pre-computed insight cards for the AI Insights panel. The 'AI' label here means 'analyst-curated insight'; no live model call is made. Numbers are derived from summary.json (Chukalla et al., Nature Food 2025).",
+  "version": 1,
+  "generated_at": "2026-05-20",
+  "demo_mode": true,
+  "categories": [
+    { "id": "all",        "label": "All insights",     "icon": "sparkles" },
+    { "id": "headline",   "label": "Headline change",  "icon": "trend" },
+    { "id": "hotspot",    "label": "Hotspots",         "icon": "pin" },
+    { "id": "compare",    "label": "Comparisons",      "icon": "compare" },
+    { "id": "anomaly",    "label": "Anomalies",        "icon": "alert" },
+    { "id": "trend",      "label": "Trends",           "icon": "line" }
+  ],
+  "cards": [
+    {
+      "id": "headline-decade-change",
+      "category": "headline",
+      "title": "Crop water use rose 9% in a decade — almost entirely from rainfall",
+      "stat":  "+8.7%",
+      "stat_label": "total crop water, 2010 → 2020",
+      "body": "Global crop water consumption climbed from 6,132 km³ in 2010 to 6,668 km³ in 2020. Green (rainfall) water grew +9.8%, while blue (irrigation) water grew only +3.5%. The decade's expansion in agricultural water demand was driven almost entirely by rainfed land, not by new irrigation.",
+      "evidence": [
+        "Green water: 5,089 → 5,588 km³ (+9.8%)",
+        "Blue water: 1,043 → 1,080 km³ (+3.5%)",
+        "Cropped area: 1,300 → 1,407 Mha (+8.2%)"
+      ],
+      "navigates_to": "trends",
+      "tone": "blue"
+    },
+    {
+      "id": "hotspot-rice-wheat-blue",
+      "category": "hotspot",
+      "title": "Half of global irrigation water serves just two cereals",
+      "stat":  "50%",
+      "stat_label": "of blue water = rice + wheat (2020)",
+      "body": "In 2020, rice consumed 328 km³ of blue (irrigation) water and wheat consumed 212 km³ — together 540 km³, or 50% of the world's 1,080 km³ agricultural blue-water footprint. Rice alone is responsible for 30% of all blue water consumed by crops globally.",
+      "evidence": [
+        "Rice: 328 km³ blue (30.4% of global blue)",
+        "Wheat: 212 km³ blue (19.7% of global blue)",
+        "Next: sugarcane 96, maize 96, cotton 70 km³"
+      ],
+      "navigates_to": "crops",
+      "tone": "blue"
+    },
+    {
+      "id": "compare-green-vs-blue",
+      "category": "compare",
+      "title": "Rainfed agriculture is the silent majority",
+      "stat":  "84%",
+      "stat_label": "of all crop water is green (rainfall)",
+      "body": "In 2020, 84% of crop water consumption came from soil moisture (green water), and only 16% from irrigation (blue water). This share has stayed remarkably stable from 2000 to 2020, despite irrigation expansion — meaning rainfed systems are absorbing the bulk of growing demand.",
+      "evidence": [
+        "Green share 2000: 80.5% · 2010: 83.0% · 2020: 83.8%",
+        "Rainfed land: 1,115 Mha (79% of cropped area)",
+        "Irrigated land: 292 Mha but 38% of production"
+      ],
+      "navigates_to": "atlas",
+      "tone": "green"
+    },
+    {
+      "id": "trend-water-productivity-falling",
+      "category": "anomaly",
+      "title": "Water productivity dropped between 2010 and 2020",
+      "stat":  "−9.4%",
+      "stat_label": "kg per m³, 2010 → 2020",
+      "body": "Global water productivity — production per unit of crop water — fell from 1.28 kg/m³ in 2010 to 1.16 kg/m³ in 2020. Even though area grew 8% and water use grew 9%, total production was essentially flat (−1.2%). The decade's expansion did not translate into proportional output.",
+      "evidence": [
+        "Productivity 2010: 1.28 kg/m³",
+        "Productivity 2020: 1.16 kg/m³",
+        "Yield: 6.02 → 5.49 t/ha (−8.8%)"
+      ],
+      "navigates_to": "trends",
+      "tone": "amber",
+      "needs_attention": true
+    },
+    {
+      "id": "compare-fastest-growers",
+      "category": "trend",
+      "title": "Maize, soybean and cassava lead the decade's growth",
+      "stat":  "+23%",
+      "stat_label": "maize green water, 2010 → 2020",
+      "body": "Three crops expanded their water footprint sharply between 2010 and 2020: maize green water +23%, soybean green water +18%, and cassava green water +48%. All three growth stories are rainfall-driven — none required matching irrigation expansion.",
+      "evidence": [
+        "Maize green: 621 → 764 km³ (+23.1%)",
+        "Soybean green: 427 → 505 km³ (+18.3%)",
+        "Cassava green: 73 → 108 km³ (+48.0%)"
+      ],
+      "navigates_to": "crops",
+      "tone": "green"
+    },
+    {
+      "id": "anomaly-oilpalm-2000",
+      "category": "anomaly",
+      "title": "Oil palm 2000 figure looks discontinuous — flagged for review",
+      "stat":  "638 → 179",
+      "stat_label": "km³ oil palm total, 2000 → 2010",
+      "body": "Oil palm appears to drop from 638 km³ in 2000 to 179 km³ in 2010 before partially recovering to 303 km³ in 2020. This is almost certainly a coverage / classification change in the upstream SPAM crop layer rather than real biophysical change. Treat the 2000 oil-palm value with caution; the 2010 → 2020 comparison is the trustworthy interval.",
+      "evidence": [
+        "2000 oil palm total: 638.4 km³",
+        "2010 oil palm total: 179.1 km³",
+        "2020 oil palm total: 302.7 km³",
+        "Many other crops also have missing/sparse 2000 values"
+      ],
+      "navigates_to": "crops",
+      "tone": "amber",
+      "needs_attention": true
+    }
+  ],
+  "suggested_actions": [
+    { "id": "generate",  "label": "Generate insights",  "hint": "Show all pre-computed insight cards" },
+    { "id": "hotspots",  "label": "Detect hotspots",    "hint": "Highlight cards tagged as hotspots" },
+    { "id": "compare",   "label": "Compare crops",      "hint": "Show comparison-style insights" },
+    { "id": "explain",   "label": "Explain trends",     "hint": "Show trend & decade-change insights" }
+  ]
+}

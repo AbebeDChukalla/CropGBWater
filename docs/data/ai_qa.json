@@ -1,0 +1,170 @@
+{
+  "_note": "Keyword-triggered Q&A index for the CropGBWater Copilot. No live LLM call is made — the chatbot scores user input against the `keywords` arrays and returns the best-matching `answer`. Numbers are grounded in summary.json, countries.json and continents.json.",
+  "version": 1,
+  "demo_mode": true,
+  "assistant_name": "CropGBWater Copilot",
+  "welcome": "Hi — I'm a demo assistant for the CropGBWater atlas. I can answer questions about crop water use across 46 crops, 172 countries and 2000–2020. Try one of the suggestions below, or ask in your own words.",
+  "no_match": "I couldn't match your question to a pre-built answer. This is a demo assistant — it doesn't call a live AI model. Try one of the suggested prompts, or rephrase using terms like \"rice\", \"blue water\", \"trends\", or a country name.",
+  "suggested_prompts": [
+    "Which countries use the most water for crops?",
+    "Which countries rely most on irrigation?",
+    "Show trends for irrigated wheat",
+    "Compare India and China",
+    "Which crops rely mostly on green water?",
+    "Where did blue water consumption increase the most?",
+    "What is green vs blue water?",
+    "How accurate is this data?"
+  ],
+  "entries": [
+    {
+      "id": "greeting",
+      "keywords": ["hi", "hello", "hey", "help", "what can you do", "start"],
+      "q": "Hi / what can you do?",
+      "a": "I'm a demo assistant for the CropGBWater atlas. I can summarise the data behind every page — the headline decade change, top crops by blue/green water, country rankings, and known caveats. Try one of the suggested prompts above, or jump to a section using the navigation.",
+      "category": "meta"
+    },
+    {
+      "id": "headline-change",
+      "keywords": ["headline", "main finding", "summary", "key finding", "overall", "9%", "8.7%", "decade", "biggest change", "what changed"],
+      "q": "What is the main finding?",
+      "a": "Between 2010 and 2020, global crop water use rose **+8.7%** — from 6,132 km³ to 6,668 km³. The growth was driven almost entirely by green water (rainfall), up **+9.8%**, while blue water (irrigation) grew only **+3.5%**. The world is feeding itself with more rain, not more irrigation.",
+      "navigates_to": "trends",
+      "category": "headline"
+    },
+    {
+      "id": "highest-blue-rice",
+      "keywords": ["blue water", "rice", "highest", "irrigation rice", "paddy"],
+      "q": "Which crops use the most blue water for rice?",
+      "a": "Rice is the single largest consumer of irrigation water on the planet: **328 km³ of blue water in 2020**, about **30%** of all blue water used by crops globally. India and China together account for roughly half of rice's blue-water footprint.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "trends-irrigated-wheat",
+      "keywords": ["wheat", "trends wheat", "irrigated wheat", "wheat trend"],
+      "q": "Show trends for irrigated wheat",
+      "a": "Wheat's blue (irrigation) water dropped slightly between 2010 and 2020 (231 → 212 km³, **−5.5%**) even as green water rose (507 → 553 km³). Wheat now uses 765 km³ total per year, the third most of any crop — and is becoming marginally more rainfed.",
+      "navigates_to": "trends",
+      "category": "crops"
+    },
+    {
+      "id": "compare-india-china",
+      "keywords": ["india", "china", "compare india", "india vs china", "india and china"],
+      "q": "Compare India and China",
+      "a": "India and China are the world's two largest crop-water consumers and are nearly tied: **India 987 km³ (715 green / 272 blue)** vs **China 968 km³ (681 green / 287 blue)**. Despite the close totals, China leans slightly more on irrigation (30% blue) than India (28% blue).",
+      "navigates_to": "ranking",
+      "category": "countries"
+    },
+    {
+      "id": "compare-india-ethiopia",
+      "keywords": ["ethiopia", "india ethiopia", "ethiopia india", "compare ethiopia"],
+      "q": "Compare Ethiopia and India",
+      "a": "Ethiopia consumes **74 km³** of crop water per year — about **7.5%** of India's footprint (987 km³). The two countries also differ structurally: **99% of Ethiopia's crop water is green (rainfed)**, vs **72% in India**. Ethiopian agriculture is essentially a rainfed system at this scale.",
+      "navigates_to": "ranking",
+      "category": "countries"
+    },
+    {
+      "id": "irrigation-dependent",
+      "keywords": ["irrigation dependent", "rely on irrigation", "most irrigated", "irrigation country", "blue dependent", "pakistan", "egypt"],
+      "q": "Which countries rely most on irrigation?",
+      "a": "**Pakistan** is the most strikingly irrigation-dependent major crop producer: 102 km³ blue out of 144 km³ total — **71% of its crop water comes from irrigation**. Egypt, Iran, Uzbekistan and Saudi Arabia are similar structural cases. These are the systems most exposed to surface-water and groundwater stress.",
+      "navigates_to": "atlas",
+      "category": "countries"
+    },
+    {
+      "id": "top-countries",
+      "keywords": ["top countries", "biggest", "largest country", "highest country", "which countries", "ranking"],
+      "q": "Which countries use the most water for crops?",
+      "a": "The top eight crop-water consumers in 2020:\n1. **India** — 987 km³\n2. **China** — 968 km³\n3. **United States** — 486 km³\n4. **Indonesia** — 409 km³\n5. **Brazil** — 395 km³\n6. **Nigeria** — 224 km³\n7. **Thailand** — 163 km³\n8. **Argentina** — 152 km³\n\nThe top three alone account for **~37%** of all crop water consumed globally.",
+      "navigates_to": "ranking",
+      "category": "countries"
+    },
+    {
+      "id": "green-reliant-crops",
+      "keywords": ["green water", "rainfed crops", "rely on green", "mostly green", "which crops rainfed"],
+      "q": "Which crops rely mostly on green water?",
+      "a": "Most crops are predominantly rainfed. Strong examples in 2020:\n- **Soybean** — 97% green (505 of 521 km³)\n- **Cassava** — >99% green\n- **Cocoa, coffee, rubber** — essentially 100% green\n- **Maize** — 89% green\n\nThe striking exceptions are **rice (68% green / 32% blue)** and **wheat (72% green / 28% blue)** — the two crops that disproportionately drive irrigation demand.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "blue-increase-where",
+      "keywords": ["blue increase", "irrigation grew", "blue grew", "where did blue", "blue water increase", "irrigation expansion"],
+      "q": "Where did blue water consumption increase the most?",
+      "a": "Globally blue water grew only **+3.5%** over the decade (1,043 → 1,080 km³). The growth is concentrated in **rice (+8.2%)** and **maize (+15.7%)**, while **wheat blue water actually fell −5.5%**. The geographic story is one of intensification in existing irrigated paddy systems rather than greenfield irrigation expansion.",
+      "navigates_to": "trends",
+      "category": "crops"
+    },
+    {
+      "id": "green-vs-blue-definition",
+      "keywords": ["what is green", "what is blue", "green water", "blue water", "definition", "explain green blue"],
+      "q": "What is green vs blue water?",
+      "a": "**Green water** is the rainfall that crops consume directly from soil moisture — no irrigation involved. **Blue water** is the irrigation water diverted from rivers, lakes and aquifers. Globally, **green water is 84% of all crop water use**; blue water is 16%. The distinction matters because blue water competes with cities, ecosystems and industry — green water generally does not.",
+      "category": "concepts"
+    },
+    {
+      "id": "yield-productivity",
+      "keywords": ["yield", "productivity", "kg per m3", "water productivity", "production fell"],
+      "q": "Why did water productivity fall?",
+      "a": "Between 2010 and 2020, global water productivity fell from **1.28 to 1.16 kg/m³ (−9.4%)**. Cropped area grew 8.2% and water use grew 8.7%, but total production was essentially flat (−1.2%). Likely contributors: expansion onto less productive land, climate-driven yield stress, and changes in the crop mix.",
+      "navigates_to": "trends",
+      "category": "trends"
+    },
+    {
+      "id": "asia-continent",
+      "keywords": ["asia", "continent", "continental", "africa", "europe", "where is water"],
+      "q": "Which continent uses the most crop water?",
+      "a": "**Asia** dominates: 3,525 km³ — **52%** of global crop water — and the highest blue-water share of any continent (26%). Africa is 18% (almost entirely green water — 90%), North America 11%, South America 10%, Europe 8%, Oceania 1%.",
+      "navigates_to": "atlas",
+      "category": "regions"
+    },
+    {
+      "id": "most-water-crop",
+      "keywords": ["most water", "biggest crop", "largest crop", "thirstiest"],
+      "q": "Which crop uses the most water overall?",
+      "a": "**Rice** is the single thirstiest crop — 1,035 km³ in 2020 (about 16% of all crop water). **Maize** comes second at 860 km³, then **wheat** at 765 km³. These three cereals together account for roughly 40% of all crop water consumed globally.",
+      "navigates_to": "crops",
+      "category": "crops"
+    },
+    {
+      "id": "methodology",
+      "keywords": ["how computed", "methodology", "method", "model", "pcr-globwb", "how is data"],
+      "q": "How is the data computed?",
+      "a": "Green and blue crop water consumption is simulated with **PCR-GLOBWB** at 0.083° (~10 km) resolution, combined with the **GAEZ crop calendar** and gridded to the **SPAM** crop production layer. Outputs are reported for 46 crops in 172 countries for 2000, 2010 and 2020. Full method in Chukalla et al. (2025), *Nature Food*.",
+      "navigates_to": "method",
+      "category": "meta"
+    },
+    {
+      "id": "cite-download",
+      "keywords": ["cite", "citation", "download", "data doi", "reference", "paper"],
+      "q": "How do I cite or download the data?",
+      "a": "**Paper:** Chukalla et al. (2025), *Nature Food*. doi.org/10.1038/s43016-025-01231-x\n\n**Data:** Zenodo doi.org/10.5281/zenodo.17059989 (CC BY 4.0)\n\nThe Method page has the full citation block and download links.",
+      "navigates_to": "method",
+      "category": "meta"
+    },
+    {
+      "id": "ai-how-it-works",
+      "keywords": ["how does this ai", "is this real ai", "are you a real ai", "llm", "gpt", "gemini", "openai", "are you live"],
+      "q": "How does this AI work? Is it live?",
+      "a": "Honestly: **no live AI is running here**. This assistant is a demo layer — pre-computed insight cards plus keyword-triggered answers, all served as static JSON from the same GitHub Pages site. It's labelled \"demo\" everywhere. A live LLM connection is on the roadmap (see the **Roadmap** page) but kept off the production site to stay free, reproducible and citable.",
+      "navigates_to": "roadmap",
+      "category": "meta"
+    },
+    {
+      "id": "digital-twin",
+      "keywords": ["digital twin", "future", "roadmap", "vision", "what next", "scenario"],
+      "q": "What is the Digital Twin concept?",
+      "a": "The CropGBWater platform is evolving toward an **AI-assisted digital twin for agricultural water use** — integrating remote sensing, crop water modelling, AI analytics, forecasting and scenario exploration. The Roadmap page shows the current architecture and four upcoming scenario modules: climate impact, irrigation expansion, water-saving interventions, and future blue/green demand projections.",
+      "navigates_to": "roadmap",
+      "category": "roadmap"
+    },
+    {
+      "id": "accuracy-caveats",
+      "keywords": ["accurate", "accuracy", "uncertainty", "caveat", "reliable", "trust", "limitations"],
+      "q": "How accurate is this data?",
+      "a": "The model is well-calibrated for the global pattern and decade-scale change. The **2010 → 2020** interval is the most trustworthy. The **2000** values are sparser — several crops (e.g. oil palm, tropical fruit, citrus) have known coverage gaps in 2000 and shouldn't be used for fine-grained year-on-year comparison. The Atlas page lists known anomalies under each crop.",
+      "navigates_to": "method",
+      "category": "meta"
+    }
+  ]
+}

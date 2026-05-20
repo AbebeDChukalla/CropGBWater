@@ -7,6 +7,8 @@ const PAGES = [
   { id: "trends",   label: "Trends" },
   { id: "crops",    label: "Crops" },
   { id: "ranking",  label: "Countries" },
+  { id: "ai",       label: "AI Insights" },
+  { id: "roadmap",  label: "Roadmap" },
   { id: "method",   label: "Method" },
   { id: "contact",  label: "Contact" },
 ];
@@ -95,6 +97,12 @@ function App() {
         <Module id="ranking" active={page === "ranking"}>
           <CountryRanking data={data} onSelectCountry={setActiveISO} />
         </Module>
+        <Module id="ai" active={page === "ai"}>
+          <AIInsights data={data} onNavigate={setPage} />
+        </Module>
+        <Module id="roadmap" active={page === "roadmap"}>
+          <Roadmap data={data} onNavigate={setPage} />
+        </Module>
         <Module id="method" active={page === "method"}>
           <MethodFooter data={data} />
         </Module>
@@ -108,6 +116,7 @@ function App() {
       {activeISO && <CountrySheet iso={activeISO} onClose={() => setActiveISO(null)} />}
 
       <TweaksPanel />
+      <Copilot onNavigate={setPage} />
     </div>
   );
 }
