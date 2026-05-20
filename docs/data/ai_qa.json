@@ -2,7 +2,7 @@
   "_note": "Keyword-triggered Q&A index for the CropGBWater Copilot. No live LLM call is made — the chatbot scores user input against the `keywords` arrays and returns the best-matching `answer`. Numbers are grounded in summary.json, countries.json and continents.json.",
   "version": 1,
   "demo_mode": true,
-  "assistant_name": "CropGBWater Copilot",
+  "assistant_name": "Copilot",
   "welcome": "Hi — I'm a demo assistant for the CropGBWater atlas. I can answer questions about crop water use across 46 crops, 172 countries and 2000–2020. Try one of the suggestions below, or ask in your own words.",
   "no_match": "I couldn't match your question to a pre-built answer. This is a demo assistant — it doesn't call a live AI model. Try one of the suggested prompts, or rephrase using terms like \"rice\", \"blue water\", \"trends\", or a country name.",
   "suggested_prompts": [

@@ -236,16 +236,16 @@ function pickEntry(input, entries) {
   return best;
 }
 
-// ─── Brand-matched icon (drop with chat dots) ──────────────────────
+// ─── Brand-matched icon (drop with chat dots, orange Copilot theme) ─
 function CopilotIcon({ small }) {
   const sz = small ? 18 : 22;
   return (
     <svg viewBox="0 0 32 32" width={sz} height={sz} aria-hidden="true">
       <defs>
         <linearGradient id="cp-drop" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#7ea36b"/>
-          <stop offset="50%" stopColor="#2d5a3d"/>
-          <stop offset="100%" stopColor="#1e4a7a"/>
+          <stop offset="0%"   stopColor="#f7c98b"/>
+          <stop offset="55%"  stopColor="#d8a05a"/>
+          <stop offset="100%" stopColor="#8b5e2b"/>
         </linearGradient>
       </defs>
       <path d="M16 3 C 10 11, 8 17, 16 27 C 24 17, 22 11, 16 3 Z"

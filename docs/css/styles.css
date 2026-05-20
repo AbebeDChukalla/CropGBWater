@@ -2307,15 +2307,15 @@ body[data-loading="0"] .boot { display: none; }
 
 .copilot-fab {
   position: fixed;
-  right: 22px;
+  left: 22px;                                  /* bottom-LEFT to avoid the Tweaks button (which is bottom-right) */
   bottom: calc(var(--pagenav-h) + 18px);
   z-index: 80;
-  width: 56px; height: 56px;
+  width: 52px; height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+  background: linear-gradient(135deg, #e0a25c 0%, var(--accent) 60%, #8b5e2b 100%);
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 24px -8px rgba(30, 74, 122, 0.55),
+  box-shadow: 0 6px 24px -8px rgba(201, 136, 59, 0.6),
               0 2px 8px -2px rgba(20, 20, 15, 0.25);
   transition: transform .18s ease-out, box-shadow .18s;
 }
@@ -2324,7 +2324,7 @@ body[data-loading="0"] .boot { display: none; }
 .copilot-fab-pulse {
   position: absolute; inset: -4px;
   border-radius: 50%;
-  border: 2px solid rgba(126, 163, 107, 0.45);
+  border: 2px solid rgba(201, 136, 59, 0.45);  /* orange pulse */
   animation: cp-pulse 2.2s ease-out infinite;
   pointer-events: none;
 }
@@ -2335,8 +2335,8 @@ body[data-loading="0"] .boot { display: none; }
 
 .copilot-panel {
   position: fixed;
-  right: 22px;
-  bottom: calc(var(--pagenav-h) + 86px);
+  left: 22px;                                  /* anchor on the same side as the FAB */
+  bottom: calc(var(--pagenav-h) + 82px);
   z-index: 79;
   width: min(380px, calc(100vw - 36px));
   height: min(560px, calc(100vh - var(--topbar-h) - var(--pagenav-h) - 110px));
@@ -2363,7 +2363,7 @@ body[data-loading="0"] .boot { display: none; }
   grid-template-columns: auto 1fr auto auto;
   align-items: center; gap: 10px;
   padding: 12px 14px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+  background: linear-gradient(135deg, #e0a25c 0%, var(--accent) 60%, #8b5e2b 100%);
   color: #ffffff;
 }
 .copilot-head-mark {
@@ -2429,7 +2429,7 @@ body[data-loading="0"] .boot { display: none; }
   margin: 4px 0; padding-left: 18px;
 }
 .copilot-bubble li { padding: 1px 0; }
-.copilot-bubble b { color: var(--blue); font-weight: 600; }
+.copilot-bubble b { color: var(--accent); font-weight: 600; }    /* orange accent for bolded numbers */
 
 .copilot-bubble.typing {
   display: inline-flex; gap: 4px; padding: 12px 14px;
@@ -2451,12 +2451,12 @@ body[data-loading="0"] .boot { display: none; }
   margin-left: 4px;
   padding: 4px 10px;
   font-family: var(--font-mono); font-size: 11px;
-  color: var(--blue);
-  background: rgba(30, 74, 122, 0.08);
+  color: var(--accent);
+  background: rgba(201, 136, 59, 0.10);
   border-radius: 6px;
   transition: background .15s;
 }
-.copilot-jump:hover { background: rgba(30, 74, 122, 0.16); }
+.copilot-jump:hover { background: rgba(201, 136, 59, 0.20); }
 
 .copilot-suggestions {
   display: flex; flex-wrap: wrap; gap: 6px;
@@ -2476,8 +2476,8 @@ body[data-loading="0"] .boot { display: none; }
 }
 .copilot-chip:hover {
   color: var(--ink);
-  border-color: var(--blue);
-  background: rgba(30, 74, 122, 0.05);
+  border-color: var(--accent);
+  background: rgba(201, 136, 59, 0.07);
 }
 
 .copilot-input {
@@ -2502,13 +2502,13 @@ body[data-loading="0"] .boot { display: none; }
   transition: border-color .15s, box-shadow .15s;
 }
 .copilot-input textarea:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(30, 74, 122, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 136, 59, 0.15);
 }
 .copilot-send {
   width: 38px; height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+  background: linear-gradient(135deg, #e0a25c 0%, var(--accent) 60%, #8b5e2b 100%);
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
   transition: opacity .15s, transform .12s;
@@ -2782,14 +2782,14 @@ body[data-loading="0"] .boot { display: none; }
   .ai-actions { gap: 6px; }
   .ai-action { padding: 8px 11px; font-size: 12px; }
   .copilot-fab {
-    width: 50px; height: 50px;
-    right: 14px;
+    width: 46px; height: 46px;
+    left: 14px;
     bottom: calc(var(--pagenav-h) + 12px);
   }
   .copilot-panel {
-    right: 10px; left: 10px;
+    left: 10px; right: 10px;                   /* full width on mobile, anchored to the FAB side */
     width: auto;
-    bottom: calc(var(--pagenav-h) + 72px);
+    bottom: calc(var(--pagenav-h) + 68px);
     height: min(520px, calc(100vh - var(--topbar-h) - var(--pagenav-h) - 96px));
   }
   .rm-scenarios { grid-template-columns: 1fr; }
